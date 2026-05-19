@@ -1,22 +1,21 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
-public class newRequestResponse implements Response{
-    private String customerName, trackId, deliveryAdress, postAddress;
+public class newRequestResponse{
+    private String customerName, requestId, deliveryAdress, postAddress;
     private String description, time;
 
-    public newRequestResponse(Request newRequestObj) {
-        this.customerName = newRequestObj.getCustomerName();
-        this.trackId = newRequestObj.getRequestId();
-        this.deliveryAdress = newRequestObj.getDeliveryAdress();
-        this.description = newRequestObj.getDescription();
-        this.time = newRequestObj.getTime();
-        this.postAddress = newRequestObj.getPickupAdress();
+    public newRequestResponse(Request request) {
+        this.customerName = request.getCustomerName();
+        this.requestId = request.getRequestId();
+        //this.deliveryAdress = request.getDeliveryAdress();
+        this.description = request.getDescription();
+        this.time = request.getTime();
+        //this.postAddress = request.getPickupAdress();
     }
 
-    @Override
-    public void newRequestResponse() {
-
-    }
+//    public void newRequestResponse() {
+//
+//    }
 
     public String getPostAddress() {
         return postAddress;
@@ -35,11 +34,11 @@ public class newRequestResponse implements Response{
     }
 
     public String getTrackId() {
-        return trackId;
+        return requestId;
     }
 
-    public void setTrackId(String trackId) {
-        this.trackId = trackId;
+    public void setTrackId(String requestId) {
+        this.requestId = requestId;
     }
 
     public String getDeliveryAdress() {

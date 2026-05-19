@@ -59,12 +59,15 @@ public class DispatchQueue2nd implements Runnable {
         Queue<Request> zoneQueue = zoneQueues.get(zone);
         if (zoneQueue != null) {
             zoneQueue.add(order);
-            System.out.println("Delivery is out to  -> " + zone.toString());
+            System.out.println(order.getRequestId()+" order staged to  -> " + zone.toString());
         }
     }
 
     // 7. Drivers or services can call this
     public Request getNextOrder(Zone zone) {
         return zoneQueues.get(zone).poll();
+        //request.setStatus(RequestStatus.OUTOFDELIVERY);
+        //return request;
     }
+
 }

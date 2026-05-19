@@ -10,16 +10,11 @@ public class RequestService {
     public RequestService(){}
     public Request createRequest(Request request){
         if (isValidRequest(request)){
-            String trackId = generateTrackingId();
-
-            LocalDateTime time = LocalDateTime.now();
-            String timeStamp = time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-            request.setRequestId(trackId);
-            request.setDescription("");
+            request.setRequestId(generateTrackingId());
+            request.setDescription(request.getDescription());
             request.setCurrentLocation(new Location(0.1, 0.2));
             request.setDeliveryLocation(new Location(0.5, 0.7));
-            request.setTime(timeStamp);
+            request.setTime(getCurrentTime());
 
              System.out.println("new request created...");
              return request;
@@ -29,11 +24,12 @@ public class RequestService {
     }
 
     public boolean isValidRequest(Request request){
-        return (request.getCustomerName() != null) &&
-                (request.getPickupAdress() != null ) &&
-                (request.getDeliveryAdress() != null) &&
-                (request.getDeliveryPostcode() != null) &&
-                (request.getPickupPostcode() != null);
+        return (request.getCustomerName() != null &&
+                request.getDeliveryZone() != null);
+//                (request.getPickupAdress() != null ) &&
+//                (request.getDeliveryAdress() != null) &&
+//                (request.getDeliveryPostcode() != null) &&
+//                (request.getPickupPostcode() != null);
     }
 
     public String generateTrackingId(){
@@ -44,5 +40,9 @@ public class RequestService {
 
     public void pushRequest(){
 
+    }
+    public String  getCurrentTime(){
+        LocalDateTime time = LocalDateTime.now();
+        return time.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 }

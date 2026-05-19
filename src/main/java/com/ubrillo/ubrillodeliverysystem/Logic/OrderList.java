@@ -35,7 +35,7 @@ public class OrderList {
     }
 
     public void removeOrderById(String Id){
-        if (orderList.containsKey(Id)){
+        if (orderList.containsKey(Id)) {
             orderList.remove(Id);
         }
     }
