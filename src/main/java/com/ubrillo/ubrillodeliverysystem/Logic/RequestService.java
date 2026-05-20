@@ -16,7 +16,7 @@ public class RequestService {
             request.setDeliveryLocation(new Location(0.5, 0.7));
             request.setTime(getCurrentTime());
 
-             System.out.println("new request created...");
+//             System.out.println("new request created...");
              return request;
         }
         System.out.println("unsucessful...");

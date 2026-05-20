@@ -1,5 +1,4 @@
 package com.ubrillo.ubrillodeliverysystem.Controller;
-
 import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +28,11 @@ public class Controller   {
     @PostMapping("api/create-request")
     public newRequestResponse requestReceiver(@RequestBody Request request){
         Request order = requestMan.createRequest(request);
-
         databaseAPI.insertOrder(order);
-
         orderList.addOrder(order);
         batchDispatcher.checkSizeTrigger();
         System.out.println(order.getRequestId() + " is created. orderNo: "+ orderList.getSize());
+
         return new newRequestResponse(order);
     }
 
@@ -42,28 +40,29 @@ public class Controller   {
     public void cancelOrder(@RequestBody Request request){
         String id = request.getRequestId();
         orderList.removeOrderById(id);
+        databaseAPI.updateOrderStatus(request.getRequestId(), RequestStatus.CANCELLED);
+
         System.out.println(request.getRequestId() + " is cancelled: "+ orderList.getSize());
     }
 
-    @GetMapping("api/track-order/{orderId}")
-    public void trackOrder(String orderId){
+    @GetMapping("api/track-order")
+    public void trackOrder(Request order){
 
     }
 
-
-
     @GetMapping("api/view-order")
-    public List<Request> getOrders(){
-        return databaseAPI.getOrders();
+    public  newRequestResponse getOrder(@RequestBody Request request){
+        Request order = databaseAPI.getOrder(request.getRequestId());
+        return new newRequestResponse(order);
     }
 
     /*===================DRIVER APIS =======================*/
-
     @PutMapping("/api/driver-delivery-out-scan")
     public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
-            Request request = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
-            request.setStatus(RequestStatus.OUTOFDELIVERY);
-            System.out.println(request.getRequestId() + " is out of delivery!!!");
+            Request order = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
+            //order.setStatus(RequestStatus.OUTOFDELIVERY);
+            databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.OUTOFDELIVERY);
+            System.out.println(order.getRequestId() + " is out of delivery!!!");
     }
 
     @PutMapping("api/v1/driver-devlivered-out-scan")
@@ -71,3 +70,4 @@ public class Controller   {
         //fetch data using database api to update order status to delivered.
     }
 }
+

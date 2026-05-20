@@ -10,6 +10,7 @@ public class Request {
     //private String pickupPostcode, deliveryPostcode;
     private String time;
     private String description;
+    private String info = "";
 
     @Enumerated(EnumType.STRING)
     private Zone  deliveryZone;
@@ -63,6 +64,13 @@ public class Request {
         this.customerName = customerName;
     }
 
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
 //    public String getPickupAdress() {
 //        return pickupAdress;
 //    }

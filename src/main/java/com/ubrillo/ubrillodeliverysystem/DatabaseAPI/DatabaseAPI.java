@@ -1,6 +1,6 @@
 package com.ubrillo.ubrillodeliverysystem.DatabaseAPI;
-
 import com.ubrillo.ubrillodeliverysystem.Logic.Request;
+import com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -8,23 +8,34 @@ import java.util.Optional;
 
 @Service
 public class DatabaseAPI {
-    private final DatabaseInterface databaseItf;
+    private final DatabaseInterface databaseIfz;
     public DatabaseAPI(DatabaseInterface orderDb){
-        this.databaseItf = orderDb;
-    }
-
-    public List<Request> getOrders(){
-        return databaseItf.findAll();
-        //return orderDb.findAll().stream().map(); if you want to filter some details to show
+        this.databaseIfz = orderDb;
     }
 
     public void insertOrder(Request request){
-        databaseItf.save(request);
+        databaseIfz.save(request);
     }
-    //public
-//    public Optional<SoftwareEngineer> getSoftwareEngineerById(Integer id) {
-//        return Optional.of(softwareEngineerRepository.findById(id)
-//                .orElseThrow(() -> new IllegalStateException(
-//                        id + "not found")));
-//    }
+    public Request getOrder(String requestId) {
+        return databaseIfz.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+    }
+
+    public void deleteOrder(String requestId) {
+        databaseIfz.deleteById(requestId);
+    }
+
+    public void updateOrderStatus(String requestId, RequestStatus newStatus) {
+        Request request = databaseIfz.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        request.setStatus(newStatus);
+        databaseIfz.save(request);
+    }
+    public void updateOrderInfo(String requestId, String info) {
+        Request request = databaseIfz.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        request.setInfo(info);
+        databaseIfz.save(request);
+    }
 }
