@@ -8,7 +8,7 @@ import java.util.List;
 
 @Service
 public class BatchDispatcher {
-    private static final int BATCH_SIZE = 100;
+    private static final int BATCH_SIZE = 5;
 
     @Autowired
     private OrderList orderList;

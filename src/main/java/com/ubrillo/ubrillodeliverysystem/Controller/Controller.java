@@ -1,5 +1,7 @@
 package com.ubrillo.ubrillodeliverysystem.Controller;
 import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +26,18 @@ public class Controller   {
     @Autowired
     private DatabaseAPI databaseAPI;
 
+    @Autowired
+    private  OrderEventProducer orderEventProducer;
 
     @PostMapping("api/create-request")
     public newRequestResponse requestReceiver(@RequestBody Request request){
         Request order = requestMan.createRequest(request);
         databaseAPI.insertOrder(order);
+
+        OrderEvent event = new OrderEvent(order);
+
+        orderEventProducer.publishOrderCreated(event);
+
         orderList.addOrder(order);
         batchDispatcher.checkSizeTrigger();
         System.out.println(order.getRequestId() + " is created. orderNo: "+ orderList.getSize());
@@ -41,7 +50,6 @@ public class Controller   {
         String id = request.getRequestId();
         orderList.removeOrderById(id);
         databaseAPI.updateOrderStatus(request.getRequestId(), RequestStatus.CANCELLED);
-
         System.out.println(request.getRequestId() + " is cancelled: "+ orderList.getSize());
     }
 
@@ -60,8 +68,6 @@ public class Controller   {
     @PutMapping("/api/driver-delivery-out-scan")
     public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
             Request order = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
-            //order.setStatus(RequestStatus.OUTOFDELIVERY);
-            databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.OUTOFDELIVERY);
             System.out.println(order.getRequestId() + " is out of delivery!!!");
     }
 

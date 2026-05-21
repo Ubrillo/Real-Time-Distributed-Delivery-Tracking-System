@@ -36,9 +36,9 @@ public class DispatchQueue2nd implements Runnable {
     // 3. Called by Controller
     public void addOrder(Request order) {
         mainQueue.add(order);
-//        databaseAPI.updateOrderStatus(
-//                order.getRequestId(),
-//                RequestStatus.DISPATCHED);
+        databaseAPI.updateOrderStatus(
+                order.getRequestId(),
+                RequestStatus.DISPATCHED);
     }
 
 //     //Background dispatcher starter
@@ -122,25 +122,15 @@ public class DispatchQueue2nd implements Runnable {
 
          // 7. Drivers or services can call this
          public Request getNextOrder (Zone zone){
-             return zoneQueues.get(zone).poll();
-//         if (order != null)
-//            databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.DISPATCHED);
-//         return order;
-//        //request.setStatus(RequestStatus.OUTOFDELIVERY);
-             //return request;
+        Request order = zoneQueues.get(zone).poll();
+         if (order != null)
+            databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.OUTFORDELIVERY);
+         return order;
          }
 
-//         @PreDestroy
-//         public void shutdown () {
-//             dispatcherPool.shutdownNow();
-//         }
-
-//    private void routeOrder2(Request order) {
-//        Zone zone = order.getDeliveryZone();
-//        Queue<Request> zoneQueue = zoneQueues.get(zone);
-//        if (zoneQueue != null) { zoneQueue.add(order);
-//            order.setInfo("stagingArea: "+zone.toString()); //System.out.println(order.getRequestId()+" order staged to -> " + zone.toString());
-//        }
-//    }
+         @PreDestroy
+         public void shutdown () {
+             dispatcherPool.shutdownNow();
+         }
 
 }
