@@ -9,7 +9,16 @@ public class OrderEventConsumer {
             topics = "order-events",
             groupId = "tracking-service-group"
     )
-    public void consumeOrderCreated(OrderEvent event){
-           System.out.println("📦received order event "+event.getRequestId());
+    public void consumeOrderCreated(Notification event){
+        String message =
+                "\n=================[Notification]================"+
+                "\nsender: "+event.sender()+
+                "\nrecipient: "+event.recipient()+
+                "\ndescription: "+event.description()+
+                "\ntime: "+event.time()+
+                "\ndetails: "+event.properties()+
+                "\nmessage: "+event.message()+
+                "\n"+"=====================[END]====================";
+        System.out.println(message);
     }
 }

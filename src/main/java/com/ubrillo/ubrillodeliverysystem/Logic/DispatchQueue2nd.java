@@ -36,9 +36,6 @@ public class DispatchQueue2nd implements Runnable {
     // 3. Called by Controller
     public void addOrder(Request order) {
         mainQueue.add(order);
-        databaseAPI.updateOrderStatus(
-                order.getRequestId(),
-                RequestStatus.DISPATCHED);
     }
 
 //     //Background dispatcher starter

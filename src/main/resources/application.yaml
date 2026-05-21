@@ -13,6 +13,6 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.value.default.type: com.ubrillo.ubrillodeliverysystem.Events.OrderEvent
+        spring.json.value.default.type: com.ubrillo.ubrillodeliverysystem.Events.Notification
 
 kind: Application

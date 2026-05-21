@@ -43,9 +43,7 @@ public class OrderList {
         return orderList.size();
     }
 
-    public void removeOrderByObj(Request Order){
-        //sorderList.rem
-    }
+
 
     @Override
     public String toString() {
