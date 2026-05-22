@@ -43,8 +43,6 @@ public class OrderList {
         return orderList.size();
     }
 
-
-
     @Override
     public String toString() {
         return "OrderQueue{" +

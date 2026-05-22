@@ -1,14 +1,19 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
+import com.ubrillo.ubrillodeliverysystem.Logic.Location;
 import com.ubrillo.ubrillodeliverysystem.Logic.Request;
 import com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus;
 import com.ubrillo.ubrillodeliverysystem.Logic.Zone;
+
+import java.time.Instant;
 
 public class OrderEvent {
     private String customerName, requestId;
     private String description, time;
     private RequestStatus status;
     private Zone deliveryZone;
+    private Instant updatedAt;
+    private Location location;
 
     public OrderEvent(Request request) {
         this.customerName = request.getCustomerName();
@@ -17,7 +22,26 @@ public class OrderEvent {
         this.time = request.getTime();
         this.status = request.getStatus();
         this.deliveryZone = request.getDeliveryZone();
+        this.updatedAt = Instant.now();
+
     }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
     public OrderEvent(){}
 
     public String getCustomerName() {

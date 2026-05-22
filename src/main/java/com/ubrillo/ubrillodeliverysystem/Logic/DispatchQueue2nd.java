@@ -19,7 +19,6 @@ public class DispatchQueue2nd implements Runnable {
     // 2. Zone queues (thread-safe + scalable)
     private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
 
-
     @Autowired
     private DatabaseAPI databaseAPI;
 
@@ -68,7 +67,7 @@ public class DispatchQueue2nd implements Runnable {
 
     @PostConstruct
     public void startDispatcher() {
-        int numberOfWorkers = 2;
+        int numberOfWorkers = 1;
 
         for (int i = 0; i < numberOfWorkers; i++) {
             dispatcherPool.submit(this);
@@ -83,7 +82,7 @@ public class DispatchQueue2nd implements Runnable {
             try {
                 Request order = mainQueue.take();   // wait until order arrives
 
-                Thread.sleep(500);                 // simulate 1 second scan time
+                Thread.sleep(1000);                 // simulate 1 second scan time
 
                 routeOrder(order);
 
@@ -94,40 +93,35 @@ public class DispatchQueue2nd implements Runnable {
         }
     }
 
-         // 6. Routing logic
-         private void routeOrder (Request order){
-             Zone zone = order.getDeliveryZone();
-             Queue<Request> zoneQueue = zoneQueues.get(zone);
-            // System.out.println(zoneQueue);
-             if (zoneQueue != null) {
-                 zoneQueue.add(order);
-                 order.setInfo("staged area:  "+zone.toString());
+     // 6. Routing logic
+     private void routeOrder (Request order){
+         Zone zone = order.getDeliveryZone();
+         Queue<Request> zoneQueue = zoneQueues.get(zone);
+        // System.out.println(zoneQueue);
+         if (zoneQueue != null) {
+             zoneQueue.add(order);
+             order.setInfo("staged area:  "+zone.toString());
 
-                 databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.STAGED);
+             databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.STAGED);
+             databaseAPI.updateOrderInfo(
+                     order.getRequestId(),
+                     order.getInfo()
+             );
 
-                 databaseAPI.updateOrderInfo(
-                         order.getRequestId(),
-                         order.getInfo()
-                 );
-
-                 System.out.println("stagingArea:" + zone.toString());
-             }else{
-                 System.out.println("zone is null");
-             }
-
+             System.out.println("stagingArea:" + zone.toString());
+         }else{
+             System.out.println("zone is null");
          }
+     }
 
-         // 7. Drivers or services can call this
-         public Request getNextOrder (Zone zone){
-        Request order = zoneQueues.get(zone).poll();
-         if (order != null)
-            databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.OUTFORDELIVERY);
-         return order;
-         }
+     // 7. Drivers or services can call this
+     public Request getNextOrder (Zone zone){
+        return zoneQueues.get(zone).poll();
+     }
 
-         @PreDestroy
-         public void shutdown () {
-             dispatcherPool.shutdownNow();
-         }
+     @PreDestroy
+     public void shutdown () {
+         dispatcherPool.shutdownNow();
+     }
 
 }

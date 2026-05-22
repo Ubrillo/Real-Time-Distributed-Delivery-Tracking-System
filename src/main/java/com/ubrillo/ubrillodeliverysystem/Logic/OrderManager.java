@@ -1,7 +1,6 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
 import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
-import com.ubrillo.ubrillodeliverysystem.Events.Message;
 import com.ubrillo.ubrillodeliverysystem.Events.Notification;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
@@ -9,13 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 @Service
-public class OrderManager {
+public class OrderManager{
     @Autowired
     RequestService requestMan;
 
@@ -34,17 +31,24 @@ public class OrderManager {
     @Autowired
     private OrderEventProducer orderEventProducer;
 
-    private static final int BATCH_SIZE = 5;
+    private static final int BATCH_SIZE = 10;
 
     public void OrderManager(){}
 
     public newRequestResponse createOrder(Request request){
         Request order = requestMan.createRequest(request);
+
         databaseAPI.insertOrder(order);
+
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
+
+        orderEventProducer.orderStateTracker(new OrderEvent(order));
+
         orderList.addOrder(order);
+
         checkSizeTrigger();
+
         return new newRequestResponse(order);
     }
 
@@ -70,11 +74,20 @@ public class OrderManager {
         return new newRequestResponse(order);
     }
 
+    public void  databaseUpdate(Request order){
+
+    }
+
     /*===================DRIVER APIS =======================*/
 
     public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
         Request order = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
-        System.out.println(order.getRequestId() + " is out of delivery!!!");
+        if (order != null){
+            order.setStatus(RequestStatus.OUTFORDELIVERY);
+            databaseAPI.updateOrderStatus(order.getRequestId(), order.getStatus());
+            Notification event = messageParser(order);
+            orderEventProducer.publishOrderCreated(event);
+        }
     }
 
     public void deliveredOutScan(@PathVariable String orderId){

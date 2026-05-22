@@ -1,5 +1,7 @@
 package com.ubrillo.ubrillodeliverysystem.Controller;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
+import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
+import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +13,9 @@ public class Controller   {
 
     @Autowired
     private OrderManager orderManager;
+
+    @Autowired
+    private OrderStateStore orderStateStore;
 
     @PostMapping("api/create-request")
     public void requestReceiver(@RequestBody Request request){
@@ -28,12 +33,12 @@ public class Controller   {
     }
 
     @GetMapping("api/view-order")
-    public  void getOrder(@RequestBody Request request){
-        orderManager.getOrder(request);
+    public OrderState getOrder(@RequestBody Request request){
+        return orderStateStore.getState(request.getRequestId());
     }
 
     /*===================DRIVER APIS =======================*/
-    @PutMapping()
+    @PutMapping("api/driver-delivery-out-scan")
     public void deliveryOutScan(@RequestBody DeliveryScanRequest request) {
             orderManager.deliveryOutScan(request);
     }
@@ -42,4 +47,3 @@ public class Controller   {
         //fetch data using database api to update order status to delivered.
     }
 }
-

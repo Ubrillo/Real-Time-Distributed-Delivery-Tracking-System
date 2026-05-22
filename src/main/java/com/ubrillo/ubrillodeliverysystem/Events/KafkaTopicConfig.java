@@ -15,4 +15,12 @@ public class KafkaTopicConfig {
                 //.replicas(1)
                 .build();
     }
+
+    @Bean
+    public NewTopic orderStateManagement(){
+        return TopicBuilder.name("tracking-events")
+                //.partitions(2)
+                //.replicas(1)
+                .build();
+    }
 }
