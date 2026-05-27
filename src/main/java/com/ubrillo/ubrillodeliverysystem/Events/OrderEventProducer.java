@@ -19,7 +19,7 @@ public class OrderEventProducer {
         publisher1.send("order-events", event.sender(), event);
     }
 
-    public void orderStateTracker(OrderEvent event){
+    public void publishOrderStateTracker(OrderEvent event){
         publisher2.send("tracking-events", event);
     }
 }

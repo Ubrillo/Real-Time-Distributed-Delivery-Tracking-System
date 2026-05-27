@@ -32,7 +32,13 @@ public class OrderStateStore {
     }
 
     private OrderState  updateHistory(OrderState oldState, OrderState newState) {
-        String history = oldState.history() + newState.history();
+        String history = "";
+
+        if (oldState != null){
+            history = oldState.history() + newState.history();
+            System.out.println(oldState.history());
+            //System.out.println(newState.history());
+        }
         return new OrderState(
                 newState.requestId(),
                 newState.status(),

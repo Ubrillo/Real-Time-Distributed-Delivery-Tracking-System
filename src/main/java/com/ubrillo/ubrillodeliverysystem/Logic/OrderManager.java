@@ -4,11 +4,14 @@ import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
 import com.ubrillo.ubrillodeliverysystem.Events.Notification;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
+import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
+import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -22,16 +25,18 @@ public class OrderManager{
     @Autowired
     DispatchQueue2nd dispatchQueue2nd;
 
-//    @Autowired
-//    BatchDispatcher batchDispatcher;
+    @Autowired
+    OrderStateStore orderStateStore;
 
     @Autowired
-    private DatabaseAPI databaseAPI;
+    BatchDispatcher batchDispatcher;
 
     @Autowired
-    private OrderEventProducer orderEventProducer;
+    DatabaseAPI databaseAPI;
 
-    private static final int BATCH_SIZE = 10;
+    @Autowired
+    OrderEventProducer orderEventProducer;
+
 
     public void OrderManager(){}
 
@@ -40,14 +45,11 @@ public class OrderManager{
 
         databaseAPI.insertOrder(order);
 
+        orderList.addOrder(order);
+        batchDispatcher.checkSizeTrigger();
+
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
-
-        orderEventProducer.orderStateTracker(new OrderEvent(order));
-
-        orderList.addOrder(order);
-
-        checkSizeTrigger();
 
         return new newRequestResponse(order);
     }
@@ -57,26 +59,32 @@ public class OrderManager{
         Request order  = orderList.getOrder(id);
         order.setStatus(RequestStatus.CANCELLED);
         orderList.removeOrderById(id);
-        databaseAPI.updateOrderStatus(request.getRequestId(), order.getStatus());
-        //messageParser(or)
-        System.out.println(request.getRequestId() + " is cancelled: "+ orderList.getSize());
 
+
+
+        //----------------Events--------------
+        //sent out notification messages
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
+
+        //updates order states consumers
+        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+
+    }
+
+    public OrderState getOrder(Request request){
+        return orderStateStore.getState(request.getRequestId());
     }
 
     public void trackOrder(Request order){
         //
     }
+//
+//    public  newRequestResponse getOrder(@RequestBody Request request){
+//        Request order = databaseAPI.getOrder(request.getRequestId());
+//        return new newRequestResponse(order);
+//    }
 
-    public  newRequestResponse getOrder(@RequestBody Request request){
-        Request order = databaseAPI.getOrder(request.getRequestId());
-        return new newRequestResponse(order);
-    }
-
-    public void  databaseUpdate(Request order){
-
-    }
 
     /*===================DRIVER APIS =======================*/
 
@@ -84,48 +92,38 @@ public class OrderManager{
         Request order = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
-            databaseAPI.updateOrderStatus(order.getRequestId(), order.getStatus());
-            Notification event = messageParser(order);
-            orderEventProducer.publishOrderCreated(event);
-        }
-    }
-
-    public void deliveredOutScan(@PathVariable String orderId){
-        //fetch data using database api to update order status to delivered.
-    }
-
-    // SIZE-BASED + TIME-BASED trigger
-    @Scheduled(fixedDelay = 10*60*1000) //every 10mins
-    public void timeBasedBatch(){
-        processBatch();
-    }
-
-    public void checkSizeTrigger(){
-        if (orderList.getSize() >= BATCH_SIZE){
-            processBatch();
-        }
-    }
-
-    private synchronized void processBatch(){
-        List<Request> batch = orderList.getBatch(BATCH_SIZE);
-        if (batch.isEmpty()) return;
-
-        for (Request order: batch){
-            dispatchQueue2nd.addOrder(order);
-            order.setStatus(RequestStatus.DISPATCHED);
-
-            databaseAPI.updateOrderStatus(
-                    order.getRequestId(),
-                    order.getStatus()
-            );
+            order.addInfo("\n-> out for delivery");
 
             Notification event = messageParser(order);
             orderEventProducer.publishOrderCreated(event);
+            orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+
         }
-//        System.out.println("Batch moved: " + batch.size());
     }
 
-    private Notification messageParser(Request order){
+    public void deliveredOutScan(Request request){
+        OrderState state =  orderStateStore.getState(request.getRequestId());
+        Request order = databaseAPI.getOrder(state.requestId());
+        order.setStatus(state.status());
+        order.setInfo(state.history());
+        order.setDeliveryLocation(state.location());
+        databaseAPI.updateOrder(order);
+        order.addInfo("\n-> order delivered");
+        Notification event = messageParser(order);
+        orderEventProducer.publishOrderCreated(event);
+        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+
+        try{
+            orderStateStore.removeState(order.getRequestId());
+            order.addInfo("\n-> order deleted from cache");
+            orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+        }catch(Exception e){
+            System.out.println(e);
+        }
+
+    }
+
+    Notification messageParser(Request order){
         RequestStatus eventType = order.getStatus();
         String sender = "ubrillo-delivery@org.uk";
         String recipient = order.getCustomerName()+"@mail.com";

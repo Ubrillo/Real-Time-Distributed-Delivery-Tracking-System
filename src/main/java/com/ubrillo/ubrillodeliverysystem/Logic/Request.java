@@ -159,6 +159,10 @@ public class Request {
         this.deliveryZone = deliveryZone;
     }
 
+    public void addInfo(String msg){
+        info += msg;
+    }
+
     @Override
     public String toString() {
         return "Request{" +

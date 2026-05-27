@@ -27,7 +27,7 @@ public class OrderEventConsumer {
                 "\ndetails: "+event.properties()+
                 "\nmessage: "+event.message()+
                 "\n"+"=====================[END]====================";
-        System.out.println(message);
+        //System.out.println(message);
     }
 
     @KafkaListener(topics ="tracking-events")
@@ -48,10 +48,10 @@ public class OrderEventConsumer {
     private String  addHistory(OrderEvent event){
         return "\n--------------[Latest Update]-------"+
                 "\nstatus: "+event.getStatus()+
-                "\ncurrent location: "+event.getUpdatedAt()+
+                "\ncurrent location: "+event.getLocation()+
                 "\ntime: "+event.getUpdatedAt()+
                 "\nID: "+event.getRequestId()+
+                "\nInfo: "+event.getInfo()+
                 "\n"+"------------[END]---------------";
-
     }
 }

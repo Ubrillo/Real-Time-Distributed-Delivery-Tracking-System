@@ -14,6 +14,7 @@ public class OrderEvent {
     private Zone deliveryZone;
     private Instant updatedAt;
     private Location location;
+    private String info;
 
     public OrderEvent(Request request) {
         this.customerName = request.getCustomerName();
@@ -23,7 +24,15 @@ public class OrderEvent {
         this.status = request.getStatus();
         this.deliveryZone = request.getDeliveryZone();
         this.updatedAt = Instant.now();
+        this.info = request.getInfo();
+    }
 
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 
     public Instant getUpdatedAt() {

@@ -1,5 +1,8 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
+import com.ubrillo.ubrillodeliverysystem.Events.Notification;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 @Service
-public class DispatchQueue2nd implements Runnable {
+public class DispatchQueue2nd  implements Runnable{
 
     // 1. Main incoming queue (thread-safe)
    // private final Queue<Request> mainQueue = new ConcurrentLinkedQueue<>();
@@ -24,6 +27,8 @@ public class DispatchQueue2nd implements Runnable {
 
     private final ExecutorService dispatcherPool = Executors.newFixedThreadPool(4);   // 4 workers
 
+    @Autowired
+    private OrderEventProducer orderEventProducer;
 
     // Constructor: initialize zones
     public DispatchQueue2nd() {
@@ -34,7 +39,13 @@ public class DispatchQueue2nd implements Runnable {
 
     // 3. Called by Controller
     public void addOrder(Request order) {
+        order.setStatus(RequestStatus.DISPATCHED);
         mainQueue.add(order);
+
+//        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+//        Notification event = messageParser(order);
+//        orderEventProducer.publishOrderCreated(event);
+
     }
 
 //     //Background dispatcher starter
@@ -100,13 +111,9 @@ public class DispatchQueue2nd implements Runnable {
         // System.out.println(zoneQueue);
          if (zoneQueue != null) {
              zoneQueue.add(order);
-             order.setInfo("staged area:  "+zone.toString());
-
-             databaseAPI.updateOrderStatus(order.getRequestId(), RequestStatus.STAGED);
-             databaseAPI.updateOrderInfo(
-                     order.getRequestId(),
-                     order.getInfo()
-             );
+             order.addInfo("\n-> moved to staged area: "+zone.toString());
+             order.setStatus(RequestStatus.STAGED);
+             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
 
              System.out.println("stagingArea:" + zone.toString());
          }else{

@@ -14,8 +14,6 @@ public class Controller   {
     @Autowired
     private OrderManager orderManager;
 
-    @Autowired
-    private OrderStateStore orderStateStore;
 
     @PostMapping("api/create-request")
     public void requestReceiver(@RequestBody Request request){
@@ -34,16 +32,17 @@ public class Controller   {
 
     @GetMapping("api/view-order")
     public OrderState getOrder(@RequestBody Request request){
-        return orderStateStore.getState(request.getRequestId());
+        return orderManager.getOrder(request);
     }
 
     /*===================DRIVER APIS =======================*/
     @PutMapping("api/driver-delivery-out-scan")
     public void deliveryOutScan(@RequestBody DeliveryScanRequest request) {
-            orderManager.deliveryOutScan(request);
+
+        orderManager.deliveryOutScan(request);
     }
 
-    public void deliveredOutScan(@PathVariable  String orderId){
-        //fetch data using database api to update order status to delivered.
+    public void deliveredOutScan(@RequestBody Request request) {
+        orderManager.deliveredOutScan(request);
     }
 }

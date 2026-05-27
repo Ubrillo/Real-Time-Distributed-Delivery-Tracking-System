@@ -1,11 +1,18 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class OrderList {
+
+    @Autowired
+    private OrderEventProducer orderEventProducer;
+
     private Map<String, Request> orderList;
     public OrderList(){
         //this.order = order;
@@ -14,15 +21,21 @@ public class OrderList {
 
     public synchronized void addOrder(Request order){
         orderList.put(order.getRequestId(), order);
+        order.addInfo("\n-> move to orderlist");
+        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
     }
 
     public synchronized List<Request> getBatch(int size){
         List<Request> batch = new ArrayList<>();
         Iterator<Request> itr = orderList.values().iterator();
         while(itr.hasNext() && batch.size() < size){
-            Request req = itr.next();
-            batch.add(req);
+            Request order = itr.next();
+            batch.add(order);
+            order.addInfo("\n-> moved to mini-batch");
+            orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
             itr.remove();
+            order.addInfo("\n-> removed from orderlist");
+            orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         }
         return batch;
     }
@@ -34,9 +47,13 @@ public class OrderList {
         return null;
     }
 
-    public void removeOrderById(String Id){
-        if (orderList.containsKey(Id)) {
-            orderList.remove(Id);
+    public void removeOrderById(String id){
+
+        if (orderList.containsKey(id)) {
+            Request order = getOrder(id);
+            orderList.remove(id);
+            order.addInfo("\n-> removed from orderlist");
+            orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         }
     }
     public synchronized int getSize(){
