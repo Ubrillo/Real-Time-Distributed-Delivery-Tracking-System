@@ -8,7 +8,7 @@ import java.time.Instant;
 public record OrderState(
         String requestId,
         RequestStatus status,
-        Instant updatedAt,
+        String updatedAt,
         Location location,
         String history
 ) {}

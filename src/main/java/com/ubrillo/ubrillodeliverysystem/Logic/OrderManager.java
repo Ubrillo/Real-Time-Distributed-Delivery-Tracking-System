@@ -7,7 +7,6 @@ import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +16,7 @@ import java.util.List;
 @Service
 public class OrderManager{
     @Autowired
+
     RequestService requestMan;
 
     @Autowired
@@ -50,6 +50,7 @@ public class OrderManager{
 
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
+        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
 
         return new newRequestResponse(order);
     }
@@ -58,33 +59,35 @@ public class OrderManager{
         String id = request.getRequestId();
         Request order  = orderList.getOrder(id);
         order.setStatus(RequestStatus.CANCELLED);
-        orderList.removeOrderById(id);
+        orderList.removeOrder(id);
 
-
-
-        //----------------Events--------------
-        //sent out notification messages
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
-
-        //updates order states consumers
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-
     }
 
     public OrderState getOrder(Request request){
-        return orderStateStore.getState(request.getRequestId());
+        OrderState state =  orderStateStore.getState(request.getRequestId());
+        if (state == null){
+            Request order = getOrderFromDb(request);
+            return new OrderState(
+                    order.getRequestId(),
+                    order.getStatus(),
+                    order.getTime(),
+                    request.getDeliveryLocation(),
+                    request.getInfo()
+            );
+        }
+        return state;
+    }
+
+    public Request  getOrderFromDb(Request request){
+        return databaseAPI.getOrder(request.getRequestId());
     }
 
     public void trackOrder(Request order){
         //
     }
-//
-//    public  newRequestResponse getOrder(@RequestBody Request request){
-//        Request order = databaseAPI.getOrder(request.getRequestId());
-//        return new newRequestResponse(order);
-//    }
-
 
     /*===================DRIVER APIS =======================*/
 
@@ -104,9 +107,10 @@ public class OrderManager{
     public void deliveredOutScan(Request request){
         OrderState state =  orderStateStore.getState(request.getRequestId());
         Request order = databaseAPI.getOrder(state.requestId());
-        order.setStatus(state.status());
-        order.setInfo(state.history());
+        order.setStatus(RequestStatus.DELIVERED);
+        order.setInfo("Delivered");
         order.setDeliveryLocation(state.location());
+        order.setTime(requestMan.getCurrentTime());
         databaseAPI.updateOrder(order);
         order.addInfo("\n-> order delivered");
         Notification event = messageParser(order);

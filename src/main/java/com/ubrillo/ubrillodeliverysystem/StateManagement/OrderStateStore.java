@@ -1,7 +1,6 @@
 package com.ubrillo.ubrillodeliverysystem.StateManagement;
 
 import org.springframework.stereotype.Service;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,8 +35,6 @@ public class OrderStateStore {
 
         if (oldState != null){
             history = oldState.history() + newState.history();
-            System.out.println(oldState.history());
-            //System.out.println(newState.history());
         }
         return new OrderState(
                 newState.requestId(),

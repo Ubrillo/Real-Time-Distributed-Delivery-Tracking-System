@@ -1,5 +1,8 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
+import com.ubrillo.ubrillodeliverysystem.Logic.Request;
+import com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus;
+
 public record Notification(
         String sender,
         String recipient,
@@ -7,4 +10,4 @@ public record Notification(
         String time,
         String properties,
         String message
-) {}
+)   {}

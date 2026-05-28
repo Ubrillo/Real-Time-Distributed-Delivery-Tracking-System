@@ -12,12 +12,12 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 @Service
-public class DispatchQueue2nd  implements Runnable{
+public class DispatchQueue2nd extends Containers implements Runnable{
 
     // 1. Main incoming queue (thread-safe)
    // private final Queue<Request> mainQueue = new ConcurrentLinkedQueue<>();
 
-    private final BlockingQueue<Request> mainQueue = new LinkedBlockingQueue<>();
+    //private final BlockingQueue<Request> mainQueue = new LinkedBlockingQueue<>();
 
     // 2. Zone queues (thread-safe + scalable)
     private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
@@ -30,21 +30,11 @@ public class DispatchQueue2nd  implements Runnable{
     @Autowired
     private OrderEventProducer orderEventProducer;
 
-    // Constructor: initialize zones
-    public DispatchQueue2nd() {
-        for (Zone zone : Zone.values()) {
-            zoneQueues.put(zone, new ConcurrentLinkedQueue<>());
-        }
-    }
 
     // 3. Called by Controller
     public void addOrder(Request order) {
-        order.setStatus(RequestStatus.DISPATCHED);
-        mainQueue.add(order);
 
-//        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-//        Notification event = messageParser(order);
-//        orderEventProducer.publishOrderCreated(event);
+        addOrderToQueue(order);
 
     }
 
@@ -91,7 +81,7 @@ public class DispatchQueue2nd  implements Runnable{
         System.out.println("Worker started: " + Thread.currentThread().getName());
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                Request order = mainQueue.take();   // wait until order arrives
+                Request order = getMainQueue().take();   // wait until order arrives
 
                 Thread.sleep(1000);                 // simulate 1 second scan time
 
@@ -106,24 +96,12 @@ public class DispatchQueue2nd  implements Runnable{
 
      // 6. Routing logic
      private void routeOrder (Request order){
-         Zone zone = order.getDeliveryZone();
-         Queue<Request> zoneQueue = zoneQueues.get(zone);
-        // System.out.println(zoneQueue);
-         if (zoneQueue != null) {
-             zoneQueue.add(order);
-             order.addInfo("\n-> moved to staged area: "+zone.toString());
-             order.setStatus(RequestStatus.STAGED);
-             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+         addOrderToZoneQueue(order);
 
-             System.out.println("stagingArea:" + zone.toString());
-         }else{
-             System.out.println("zone is null");
-         }
      }
 
-     // 7. Drivers or services can call this
      public Request getNextOrder (Zone zone){
-        return zoneQueues.get(zone).poll();
+        return getNextOrderFromZoneQueue(zone);
      }
 
      @PreDestroy

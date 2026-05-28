@@ -10,17 +10,17 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class BatchDispatcher {
+public class BatchDispatcher extends Containers{
     private static final int BATCH_SIZE = 5;
-
-    @Autowired
-    private OrderEventProducer orderEventProducer;
 
     @Autowired
     private OrderList orderList;
 
     @Autowired
     private DispatchQueue2nd dispatchQueue2nd;
+
+//    @Autowired
+//    private Containers containers;
 
     // SIZE-BASED + TIME-BASED trigger
     @Scheduled(fixedDelay = 10 * 60 * 1000) //every 10mins
@@ -29,7 +29,7 @@ public class BatchDispatcher {
     }
 
     public void checkSizeTrigger() {
-        if (orderList.getSize() >= BATCH_SIZE) {
+        if(orderList.getSize() >= BATCH_SIZE){
             processBatch();
         }
     }
@@ -42,13 +42,6 @@ public class BatchDispatcher {
             dispatchQueue2nd.addOrder(order);
             order.setStatus(RequestStatus.DISPATCHED);
 
-            order.addInfo("\n->moved to dispatchedQueue");
-
-//            Notification event = messageParser(order);
-//            orderEventProducer.publishOrderCreated(event);
-            orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-
         }
-        //System.out.println("Batch moved: " + batch.size());
     }
 }

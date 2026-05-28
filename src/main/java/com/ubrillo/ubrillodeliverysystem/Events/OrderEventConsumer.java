@@ -27,8 +27,9 @@ public class OrderEventConsumer {
                 "\ndetails: "+event.properties()+
                 "\nmessage: "+event.message()+
                 "\n"+"=====================[END]====================";
-        //System.out.println(message);
+        System.out.println(message);
     }
+
 
     @KafkaListener(topics ="tracking-events")
     public void consumeOrderState(OrderEvent event){
@@ -37,7 +38,7 @@ public class OrderEventConsumer {
         OrderState state = new OrderState(
                 event.getRequestId(),
                 event.getStatus(),
-                event.getUpdatedAt(),
+                event.getTime(),
                 event.getLocation(),
                 history
         );

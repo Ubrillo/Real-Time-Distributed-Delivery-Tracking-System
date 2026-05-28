@@ -39,7 +39,6 @@ public class DatabaseAPI {
         databaseIfz.save(request);
     }
 
-
     public void updateOrderInfo(String requestId, String info) {
         Request request = databaseIfz.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));

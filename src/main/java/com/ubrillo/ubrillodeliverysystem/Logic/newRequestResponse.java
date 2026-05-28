@@ -13,22 +13,7 @@ public class newRequestResponse{
         this.time = request.getTime();
         this.status = request.getStatus();
         this.deliveryZone = request.getDeliveryZone();
-
-        //this.deliveryAdress = request.getDeliveryAdress();
-        //this.postAddress = request.getPickupAdress();
     }
-
-//    public void newRequestResponse() {
-//
-//    }
-
-//    public String getPostAddress() {
-//        return postAddress;
-//    }
-//
-//    public void setPostAddress(String postAddress) {
-//        this.postAddress = postAddress;
-//    }
 
     public String getRequestId() {
         return requestId;
@@ -54,14 +39,6 @@ public class newRequestResponse{
         this.customerName = customerName;
     }
 
-//
-//    public String getDeliveryAdress() {
-//        return deliveryAdress;
-//    }
-
-//    public void setDeliveryAdress(String deliveryAdress) {
-//        this.deliveryAdress = deliveryAdress;
-//    }
 
     public String getDescription() {
         return description;
