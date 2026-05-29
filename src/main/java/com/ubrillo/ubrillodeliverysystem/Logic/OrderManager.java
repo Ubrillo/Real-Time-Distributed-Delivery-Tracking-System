@@ -46,11 +46,11 @@ public class OrderManager{
         databaseAPI.insertOrder(order);
 
         orderList.addOrder(order);
-        batchDispatcher.checkSizeTrigger();
-
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+
+        batchDispatcher.checkSizeTrigger();
 
         return new newRequestResponse(order);
     }
@@ -130,10 +130,11 @@ public class OrderManager{
     Notification messageParser(Request order){
         RequestStatus eventType = order.getStatus();
         String sender = "ubrillo-delivery@org.uk";
-        String recipient = order.getCustomerName()+"@mail.com";
+        String recipient = order.getCustomerName();
         String description = order.getDescription();
         String time = requestMan.getCurrentTime();
-        String properties = order.getRequestId();
+        String orderId = order.getRequestId();
+        RequestStatus orderStatus = order.getStatus();
 
         String message = "";
         switch (eventType){
@@ -148,8 +149,10 @@ public class OrderManager{
                 recipient,
                 description,
                 time,
-                properties,
-                message
+                orderId,
+                message,
+                order.getEmailAddress(),
+                orderStatus
         );
     }
 }

@@ -8,6 +8,8 @@ public record Notification(
         String recipient,
         String description,
         String time,
-        String properties,
-        String message
+        String orderId,
+        String message,
+        String userEmail,
+        RequestStatus orderStatus
 )   {}

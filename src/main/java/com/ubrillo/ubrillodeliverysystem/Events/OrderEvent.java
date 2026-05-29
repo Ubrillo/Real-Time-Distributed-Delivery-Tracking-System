@@ -15,6 +15,7 @@ public class OrderEvent {
     private Instant updatedAt;
     private Location location;
     private String info;
+    private String userEmail;
 
     public OrderEvent(Request request) {
         this.customerName = request.getCustomerName();
@@ -25,6 +26,7 @@ public class OrderEvent {
         this.deliveryZone = request.getDeliveryZone();
         this.updatedAt = Instant.now();
         this.info = request.getInfo();
+        this.userEmail = request.getEmailAddress();
     }
 
     public String getInfo() {
@@ -99,5 +101,13 @@ public class OrderEvent {
 
     public void setStatus(RequestStatus status) {
         this.status = status;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 }

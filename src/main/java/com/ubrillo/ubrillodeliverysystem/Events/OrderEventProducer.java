@@ -22,4 +22,5 @@ public class OrderEventProducer {
     public void publishOrderStateTracker(OrderEvent event){
         publisher2.send("tracking-events", event);
     }
+
 }

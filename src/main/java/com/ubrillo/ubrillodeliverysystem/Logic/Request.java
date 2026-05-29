@@ -5,12 +5,10 @@ import jakarta.persistence.*;
 @Entity
 public class Request {
     private String customerName;
-    //private String pickupAdress;
-    //private String deliveryAdress;
-    //private String pickupPostcode, deliveryPostcode;
     private String time;
     private String description;
     private String info = "";
+    private String emailAddress;
 
     @Enumerated(EnumType.STRING)
     private Zone  deliveryZone;
@@ -41,19 +39,16 @@ public class Request {
     public Request(String customerName,
                    String requestId, String description,
                    Location currentLocation, Location deliveryLocation,
-                   String time, String zone) {
+                   String time, String zone, String emailAdress) {
 
         this.customerName = customerName;
-//        this.pickupAdress = pickupAdress;
-//        this.deliveryAdress = deliveryAdress;
-//        this.pickupPostcode = pickupPostcode;
-//        this.deliveryPostcode = deliveryPostcode;
         this.requestId = requestId;
         this.description = description;
         this.currentLocation = currentLocation;
         this.deliveryLocation = deliveryLocation;
         this.time = time;
         this.status = RequestStatus.CREATED;
+        this.emailAddress = emailAdress;
     }
 
     public String getCustomerName() {
@@ -71,21 +66,7 @@ public class Request {
     public void setInfo(String info) {
         this.info = info;
     }
-//    public String getPickupAdress() {
-//        return pickupAdress;
-//    }
-//
-//    public void setPickupAdress(String pickupAdress) {
-//        this.pickupAdress = pickupAdress;
-//    }
-//
-//    public String getDeliveryAdress() {
-//        return deliveryAdress;
-//    }
-//
-//    public void setDeliveryAdress(String deliveryAdress) {
-//        this.deliveryAdress = deliveryAdress;
-//    }
+
 
     public RequestStatus getStatus() {
         return status;
@@ -127,21 +108,6 @@ public class Request {
         this.requestId = requestId;
     }
 
-//    public String getDeliveryPostcode() {
-//        return deliveryPostcode;
-//    }
-//
-//    public void setDeliveryPostcode(String deliveryPostcode) {
-//        this.deliveryPostcode = deliveryPostcode;
-//    }
-//
-//    public String getPickupPostcode() {
-//        return pickupPostcode;
-//    }
-//
-//    public void setPickupPostcode(String pickupPostcode) {
-//        this.pickupPostcode = pickupPostcode;
-//    }
 
     public String getTime() {
         return time;
@@ -163,14 +129,19 @@ public class Request {
         info += msg;
     }
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress) {
+        this.emailAddress = emailAddress;
+    }
+
     @Override
     public String toString() {
         return "Request{" +
                 "customerName='" + customerName + '\'' +
-//                ", pickupAdress='" + pickupAdress + '\'' +
-//                ", deliveryAdress='" + deliveryAdress + '\'' +
-//                ", pickupPostcode='" + pickupPostcode + '\'' +
-//                ", deliveryPostcode='" + deliveryPostcode + '\'' +
+
                 ", requestId='" + requestId + '\'' +
                 ", description='" + description + '\'' +
                 ", status=" + status +
@@ -179,4 +150,6 @@ public class Request {
                 ", time='" + time + '\'' +
                 '}';
     }
+
+
 }

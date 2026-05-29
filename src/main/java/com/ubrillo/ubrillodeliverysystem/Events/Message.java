@@ -1,7 +1,9 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
-public class Message {
-    public Message(){}
-
-
+public enum Message {
+    ORDER_RECIEVED,
+    ORDER_DISPATCHED,
+    ORDER_CANCELLED,
+    ORDER_OUT_FOR_DELIVERY,
+    ORDER_DELIVERED
 }

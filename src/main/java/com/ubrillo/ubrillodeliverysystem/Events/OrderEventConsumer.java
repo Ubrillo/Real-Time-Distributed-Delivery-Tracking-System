@@ -4,14 +4,19 @@ import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
-@Service
+@Component
 public class OrderEventConsumer {
     @Autowired
     private  OrderStateStore stateStore;
+
+    @Autowired
+    private  EmailNotificationService emailService;
+
 
     @KafkaListener(
             topics = "order-events",
@@ -24,10 +29,11 @@ public class OrderEventConsumer {
                 "\nrecipient: "+event.recipient()+
                 "\ndescription: "+event.description()+
                 "\ntime: "+event.time()+
-                "\ndetails: "+event.properties()+
+                "\norder No: "+event.orderId()+
                 "\nmessage: "+event.message()+
                 "\n"+"=====================[END]====================";
         System.out.println(message);
+        emailService.sendOrdUpdateEmail(event);
     }
 
 

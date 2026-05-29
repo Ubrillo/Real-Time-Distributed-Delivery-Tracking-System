@@ -25,11 +25,8 @@ public class RequestService {
 
     public boolean isValidRequest(Request request){
         return (request.getCustomerName() != null &&
-                request.getDeliveryZone() != null);
-//                (request.getPickupAdress() != null ) &&
-//                (request.getDeliveryAdress() != null) &&
-//                (request.getDeliveryPostcode() != null) &&
-//                (request.getPickupPostcode() != null);
+                request.getDeliveryZone() != null &&
+                request.getEmailAddress() != null);
     }
 
     public String generateTrackingId(){

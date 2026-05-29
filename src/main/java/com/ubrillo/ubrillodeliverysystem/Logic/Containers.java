@@ -16,12 +16,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 
 @Service
-public class Containers {
+public class Containers{
 
     @Autowired
     DatabaseAPI databaseAPI;
 
-    private RequestService requestMan;
+    @Autowired
+    private MessageParser messageParser;
 
     private final BlockingQueue<Request> mainQueue = new LinkedBlockingQueue<>();
     private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
@@ -44,12 +45,14 @@ public class Containers {
         mainQueue.add(order);
         order.addInfo("\n-> order dispatched to main queue");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-
+        Notification event = messageParser.messageParser(order);
+        orderEventProducer.publishOrderCreated(event);
     }
     public Request getOrderFromQueue(){
         Request order = mainQueue.poll();
         order.addInfo("\n->order removed from mainqueue");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+
         return order;
     }
 
@@ -116,4 +119,5 @@ public class Containers {
         order.addInfo("\n-> order added orderlist");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
     }
+
 }
