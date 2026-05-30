@@ -45,7 +45,7 @@ public class Containers{
         mainQueue.add(order);
         order.addInfo("\n-> order dispatched to main queue");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-        Notification event = messageParser.messageParser(order);
+        Notification event = messageParser.parser(order);
         orderEventProducer.publishOrderCreated(event);
     }
     public Request getOrderFromQueue(){
@@ -71,9 +71,13 @@ public class Containers{
         Zone zone = order.getDeliveryZone();
         Queue<Request> zoneQueue = zoneQueues.get(zone);
         if (zoneQueue != null){
+            order.setStatus(RequestStatus.OUTFORDELIVERY);
             zoneQueue.add(order);
             order.addInfo("\n-> moved to staged area: "+zone.toString());
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+            Notification event = messageParser.parser(order);
+            orderEventProducer.publishOrderCreated(event);
+
         }
     }
     public BlockingQueue<Request> getMainQueue(){
@@ -85,6 +89,8 @@ public class Containers{
         orderList.put(order.getRequestId(), order);
         order.addInfo("\n-> move to orderlist");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+        Notification event = messageParser.parser(order);
+        orderEventProducer.publishOrderCreated(event);
 
     }
 
@@ -103,9 +109,12 @@ public class Containers{
         System.out.println("trying to remove order");
         if (orderList.containsKey(id)) {
             Request order = getOrderFromList(id);
+            order.setStatus(RequestStatus.CANCELLED);
             orderList.remove(id);
             order.addInfo("\n-> removed from orderlist");
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+            Notification event = messageParser.parser(order);
+            orderEventProducer.publishOrderCreated(event);
         }
     }
 

@@ -42,28 +42,18 @@ public class OrderManager{
 
     public newRequestResponse createOrder(Request request){
         Request order = requestMan.createRequest(request);
-
         databaseAPI.insertOrder(order);
-
         orderList.addOrder(order);
-        Notification event = messageParser(order);
-        orderEventProducer.publishOrderCreated(event);
-        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-
         batchDispatcher.checkSizeTrigger();
-
         return new newRequestResponse(order);
     }
 
     public void cancelOrder(Request request){
         String id = request.getRequestId();
         Request order  = orderList.getOrder(id);
-        order.setStatus(RequestStatus.CANCELLED);
         orderList.removeOrder(id);
 
-        Notification event = messageParser(order);
-        orderEventProducer.publishOrderCreated(event);
-        orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
+
     }
 
     public OrderState getOrder(Request request){

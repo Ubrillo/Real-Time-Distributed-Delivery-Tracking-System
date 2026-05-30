@@ -10,7 +10,7 @@ public class MessageParser {
 
     public MessageParser(){}
 
-    public Notification messageParser(Request order){
+    public Notification parser(Request order){
         RequestStatus eventType = order.getStatus();
         String sender = "ubrillo-delivery@org.uk";
         String recipient = order.getCustomerName();

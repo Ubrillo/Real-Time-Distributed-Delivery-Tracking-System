@@ -12,8 +12,8 @@ public class RequestService {
         if (isValidRequest(request)){
             request.setRequestId(generateTrackingId());
             request.setDescription(request.getDescription());
-            request.setCurrentLocation(new Location(0.1, 0.2));
-            request.setDeliveryLocation(new Location(0.5, 0.7));
+            request.setCurrentLocation(new Location(0.0, 0.));
+            request.setDeliveryLocation(new Location(0.0, 0.0));
             request.setTime(getCurrentTime());
 
 //             System.out.println("new request created...");

@@ -2,6 +2,8 @@ package com.ubrillo.ubrillodeliverysystem.Logic;
 
 import jakarta.persistence.*;
 
+import java.util.HashMap;
+
 @Entity
 public class Request {
     private String customerName;
@@ -9,6 +11,8 @@ public class Request {
     private String description;
     private String info = "";
     private String emailAddress;
+    private String address;
+    private String postcode;
 
     @Enumerated(EnumType.STRING)
     private Zone  deliveryZone;

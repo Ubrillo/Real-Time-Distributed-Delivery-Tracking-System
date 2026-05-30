@@ -4,17 +4,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import static com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus.*;
-
-
 @Service
 public class EmailNotificationService {
 
-    private final JavaMailSender mailSender;
+    private  JavaMailSender mailSender;
 
-    public EmailNotificationService(JavaMailSender mailSender){
-        this.mailSender = mailSender;
-    }
+    public EmailNotificationService() {}
 
     public void sendOrdUpdateEmail(Notification event){
         SimpleMailMessage message = new SimpleMailMessage();
