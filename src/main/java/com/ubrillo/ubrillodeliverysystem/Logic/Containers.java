@@ -17,7 +17,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
 public class Containers{
-
     @Autowired
     DatabaseAPI databaseAPI;
 
@@ -39,7 +38,6 @@ public class Containers{
     }
 
     /*------------------ QUEUE HANDLERS ------------------ */
-
     public void addOrderToQueue(Request order) {
         order.setStatus(RequestStatus.DISPATCHED);
         mainQueue.add(order);
@@ -48,6 +46,7 @@ public class Containers{
         Notification event = messageParser.parser(order);
         orderEventProducer.publishOrderCreated(event);
     }
+
     public Request getOrderFromQueue(){
         Request order = mainQueue.poll();
         order.addInfo("\n->order removed from mainqueue");
@@ -55,7 +54,6 @@ public class Containers{
 
         return order;
     }
-
 
     public Request getNextOrderFromZoneQueue(Zone zone) {
         Request request = zoneQueues.get(zone).poll();
@@ -77,7 +75,6 @@ public class Containers{
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
             Notification event = messageParser.parser(order);
             orderEventProducer.publishOrderCreated(event);
-
         }
     }
     public BlockingQueue<Request> getMainQueue(){
@@ -91,7 +88,6 @@ public class Containers{
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         Notification event = messageParser.parser(order);
         orderEventProducer.publishOrderCreated(event);
-
     }
 
     public  Map<String, Request> getOrderList(){

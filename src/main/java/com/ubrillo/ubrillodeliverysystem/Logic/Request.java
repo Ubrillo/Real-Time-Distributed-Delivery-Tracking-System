@@ -1,28 +1,49 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 
 @Entity
 public class Request {
+    @Setter
+    @Getter
     private String customerName;
+    @Setter
+    @Getter
     private String time;
+    @Setter
+    @Getter
     private String description;
+    @Getter
+    @Setter
     private String info = "";
+    @Setter
+    @Getter
     private String emailAddress;
-    private String address;
-    private String postcode;
+    private String deliveryAddress;
+    @Getter
+    private String postCode;
 
+    @Setter
+    @Getter
     @Enumerated(EnumType.STRING)
     private Zone  deliveryZone;
 
+    @Setter
+    @Getter
     @Id
     private String requestId;
 
+    @Setter
+    @Getter
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
+    @Setter
+    @Getter
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "latitude", column = @Column(name = "pickup_latitude")),
@@ -30,6 +51,8 @@ public class Request {
     })
     private Location currentLocation;
 
+    @Setter
+    @Getter
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "latitude", column = @Column(name = "drop_latitude")),
@@ -40,10 +63,15 @@ public class Request {
     public Request() {
         // REQUIRED
     }
+
     public Request(String customerName,
-                   String requestId, String description,
-                   Location currentLocation, Location deliveryLocation,
-                   String time, String zone, String emailAdress) {
+                   String requestId,
+                   String description,
+                   Location currentLocation,
+                   Location deliveryLocation,
+                   String time,
+                   String emailAddress,
+                   String postCode) {
 
         this.customerName = customerName;
         this.requestId = requestId;
@@ -52,94 +80,14 @@ public class Request {
         this.deliveryLocation = deliveryLocation;
         this.time = time;
         this.status = RequestStatus.CREATED;
-        this.emailAddress = emailAdress;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }
-
-
-    public RequestStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(RequestStatus status) {
-        this.status = status;
-    }
-
-    public Location getCurrentLocation() {
-        return currentLocation;
-    }
-
-    public void setCurrentLocation(Location currentLocation) {
-        this.currentLocation = currentLocation;
-    }
-
-    public Location getDeliveryLocation() {
-        return deliveryLocation;
-    }
-
-    public void setDeliveryLocation(Location deliveryLocation) {
-        this.deliveryLocation = deliveryLocation;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public Zone getDeliveryZone() {
-        return deliveryZone;
-    }
-
-    public void setDeliveryZone(Zone deliveryZone) {
-        this.deliveryZone = deliveryZone;
+        this.emailAddress = emailAddress;
+        this.postCode = postCode;
     }
 
     public void addInfo(String msg){
         info += msg;
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
 
     @Override
     public String toString() {

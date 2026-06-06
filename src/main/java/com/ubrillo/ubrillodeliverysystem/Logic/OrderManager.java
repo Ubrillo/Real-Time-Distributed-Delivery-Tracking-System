@@ -37,8 +37,15 @@ public class OrderManager{
     @Autowired
     OrderEventProducer orderEventProducer;
 
+    @Autowired
+    DriverManagement driverManagement;
+
+    @Autowired
+    Containers containers;
+
 
     public void OrderManager(){}
+
 
     public newRequestResponse createOrder(Request request){
         Request order = requestMan.createRequest(request);
@@ -52,7 +59,6 @@ public class OrderManager{
         String id = request.getRequestId();
         Request order  = orderList.getOrder(id);
         orderList.removeOrder(id);
-
 
     }
 
@@ -79,6 +85,17 @@ public class OrderManager{
         //
     }
 
+    public void assignDriver(String name, Zone zone) {
+
+        DeliveryDriver driver = driverManagement.getDriver(name);
+        Request order;
+
+        do {
+            order = dispatchQueue2nd.getNextOrder(zone);
+            driver.addToDeliveryList(order);
+        } while (order != null);
+    }
+
     /*===================DRIVER APIS =======================*/
 
     public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
@@ -86,6 +103,8 @@ public class OrderManager{
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
             order.addInfo("\n-> out for delivery");
+
+
 
             Notification event = messageParser(order);
             orderEventProducer.publishOrderCreated(event);

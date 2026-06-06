@@ -82,9 +82,7 @@ public class DispatchQueue2nd extends Containers implements Runnable{
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 Request order = getMainQueue().take();   // wait until order arrives
-
                 Thread.sleep(1000);                 // simulate 1 second scan time
-
                 routeOrder(order);
 
             } catch (InterruptedException e) {
