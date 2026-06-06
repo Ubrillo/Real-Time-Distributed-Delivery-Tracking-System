@@ -1,71 +1,112 @@
 //package com.ubrillo.ubrillodeliverysystem.Logic;
-//
+//import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
+//import com.ubrillo.ubrillodeliverysystem.Events.Notification;
+//import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
+//import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
+//import jakarta.annotation.PreDestroy;
+//import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.stereotype.Service;
-//
-//import java.util.HashMap;
-//import java.util.LinkedList;
-//import java.util.Map;
+//import jakarta.annotation.PostConstruct;
 //import java.util.Queue;
-//
-//import java.util.concurrent.ConcurrentHashMap;
-//import java.util.concurrent.ConcurrentLinkedQueue;
+//import java.util.Map;
+//import java.util.concurrent.*;
 //
 //@Service
-//public class DispatchQueue{
-//    private Queue<Request> mainQueue;
-//    private Queue<Request> queueNorthLondon;
-//    private Queue<Request> queueCentralLondon;
-//    private Queue<Request> queueWestLondon;
-//    private Queue<Request> queueEastLondon;
-//    private Queue<Request> queueSouthLondon;
-//    private Zone zone;
+//public class DispatchQueue2nd extends Containers implements Runnable{
 //
-//    Map<Zone, Queue<Request>> zoneQueues = new HashMap<>();
+//    // 1. Main incoming queue (thread-safe)
+//    // private final Queue<Request> mainQueue = new ConcurrentLinkedQueue<>();
 //
-//    public DispatchQueue(){
-//        mainQueue = new LinkedList<>();
-//        queueSouthLondon = new LinkedList<>();
-//        queueCentralLondon = new LinkedList<>();
-//        queueNorthLondon = new LinkedList<>();
-//        queueEastLondon = new LinkedList<>();
+//    //private final BlockingQueue<Request> mainQueue = new LinkedBlockingQueue<>();
+//
+//    // 2. Zone queues (thread-safe + scalable)
+//    private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
+//
+//    @Autowired
+//    private DatabaseAPI databaseAPI;
+//
+//    private final ExecutorService dispatcherPool = Executors.newFixedThreadPool(4);   // 4 workers
+//
+//    @Autowired
+//    private OrderEventProducer orderEventProducer;
+//
+//
+//    // 3. Called by Controller
+//    public void addOrder(Request order) {
+//
+//        addOrderToQueue(order);
+//
 //    }
 //
-//    public void addOrder(Request order){
-//        mainQueue.add(order);
-//        zoneQueues.get(order.getDeliveryAdress()).add(order);
+////     //Background dispatcher starter
+////    @PostConstruct
+////    public void startDispatcher() {
+////        Thread dispatcherThread = new Thread(this);
+////        dispatcherThread.setDaemon(true);
+////        dispatcherThread.start();
+////    }
+////
+////     //Background loop (runs forever)
+////     @Override
+////     public void run() {
+////         while (true) {
+////             Request order = mainQueue.poll();
+////
+////             if (order != null) {
+////                 routeOrder(order);
+////             }
+////             try {
+////                 Thread.sleep(100); // prevents CPU overload
+////             }
+////              catch(InterruptedException e){
+////                     Thread.currentThread().interrupt();
+////                     break;
+////                 }
+////
+////             }
+////     }
+//
+//    @PostConstruct
+//    public void startDispatcher() {
+//        int numberOfWorkers = 1;
+//
+//        for (int i = 0; i < numberOfWorkers; i++) {
+//            dispatcherPool.submit(this);
+//        }
 //    }
 //
-//    public Request getOrder(){
-//        return mainQueue.poll();
-//    }
+//    // 5. Background loop (runs forever)
+//    @Override
+//    public void run() {
+//        System.out.println("Worker started: " + Thread.currentThread().getName());
+//        while (!Thread.currentThread().isInterrupted()) {
+//            try {
+//                Request order = getMainQueue().take();   // wait until order arrives
 //
-//    public void sorter(){
-//        while (!mainQueue.isEmpty()){
-//            Request order = mainQueue.poll();
-//            switch (order.getDeliveryAdress()){
-//                case Zone.WESTLONDON:
-//                    queueWestLondon.add(order);
-//                    break;
-//                case Zone.EASTLONDON:
-//                    queueEastLondon.add(order);
-//                    break;
-//                case Zone.NORTHLONDON:
-//                    queueNorthLondon.add(order);
-//                    break;
-//                case Zone.SOUTHLONDON:
-//                    queueSouthLondon.add(order);
-//                    break;
+//                Thread.sleep(1000);                 // simulate 1 second scan time
+//
+//                routeOrder(order);
+//
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                break;
 //            }
 //        }
 //    }
-//    private void routeToZone(Request order) {
-//        switch (order.getDeliveryAdress()) {
-//            case Zone.NORTHLONDON -> queueNorthLondon.add(order);
-//            case Zone.SOUTHLONDON -> queueSouthLondon.add(order);
-//            case Zone.EASTLONDON -> queueEastLondon.add(order);
-//            case Zone.WESTLONDON -> queueWestLondon.add(order);
-//        }
+//
+//    // 6. Routing logic
+//    private void routeOrder (Request order){
+//        addOrderToZoneQueue(order);
+//
 //    }
+//
+//    public Request getNextOrder (Zone zone){
+//        return getNextOrderFromZoneQueue(zone);
+//    }
+//
+//    @PreDestroy
+//    public void shutdown () {
+//        dispatcherPool.shutdownNow();
+//    }
+//
 //}
-//
-//

@@ -1,51 +1,90 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
-
+import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
+import com.ubrillo.ubrillodeliverysystem.Events.Notification;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
+import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
+import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.util.Queue;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.*;
 
 @Service
-public class DispatchQueue2nd implements Runnable {
+public class DispatchQueue2nd extends Containers implements Runnable{
 
     // 1. Main incoming queue (thread-safe)
-    private final Queue<Request> mainQueue = new ConcurrentLinkedQueue<>();
+   // private final Queue<Request> mainQueue = new ConcurrentLinkedQueue<>();
+
+    //private final BlockingQueue<Request> mainQueue = new LinkedBlockingQueue<>();
 
     // 2. Zone queues (thread-safe + scalable)
     private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
 
-    // Constructor: initialize zones
-    public DispatchQueue2nd() {
-        for (Zone zone : Zone.values()) {
-            zoneQueues.put(zone, new ConcurrentLinkedQueue<>());
-        }
-    }
+    @Autowired
+    private DatabaseAPI databaseAPI;
+
+    private final ExecutorService dispatcherPool = Executors.newFixedThreadPool(4);   // 4 workers
+
+    @Autowired
+    private OrderEventProducer orderEventProducer;
+
 
     // 3. Called by Controller
     public void addOrder(Request order) {
-        mainQueue.add(order);
+
+        addOrderToQueue(order);
+
     }
 
-    // 4. Background dispatcher starter
+//     //Background dispatcher starter
+//    @PostConstruct
+//    public void startDispatcher() {
+//        Thread dispatcherThread = new Thread(this);
+//        dispatcherThread.setDaemon(true);
+//        dispatcherThread.start();
+//    }
+//
+//     //Background loop (runs forever)
+//     @Override
+//     public void run() {
+//         while (true) {
+//             Request order = mainQueue.poll();
+//
+//             if (order != null) {
+//                 routeOrder(order);
+//             }
+//             try {
+//                 Thread.sleep(100); // prevents CPU overload
+//             }
+//              catch(InterruptedException e){
+//                     Thread.currentThread().interrupt();
+//                     break;
+//                 }
+//
+//             }
+//     }
+
     @PostConstruct
     public void startDispatcher() {
-        Thread dispatcherThread = new Thread(this);
-        dispatcherThread.setDaemon(true);
-        dispatcherThread.start();
+        int numberOfWorkers = 1;
+
+        for (int i = 0; i < numberOfWorkers; i++) {
+            dispatcherPool.submit(this);
+        }
     }
 
     // 5. Background loop (runs forever)
     @Override
     public void run() {
-        while (true) {
-            Request order = mainQueue.poll();
-            if (order != null) {
-                routeOrder(order);
-            }
+        System.out.println("Worker started: " + Thread.currentThread().getName());
+        while (!Thread.currentThread().isInterrupted()) {
             try {
-                Thread.sleep(300); // prevents CPU overload
+                Request order = getMainQueue().take();   // wait until order arrives
+                Thread.sleep(1000);                 // simulate 1 second scan time
+                routeOrder(order);
+
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -53,18 +92,19 @@ public class DispatchQueue2nd implements Runnable {
         }
     }
 
-    // 6. Routing logic
-    private void routeOrder(Request order) {
-        Zone zone = order.getDeliveryZone();
-        Queue<Request> zoneQueue = zoneQueues.get(zone);
-        if (zoneQueue != null) {
-            zoneQueue.add(order);
-            System.out.println("Delivery is out to quit -> " + zone.toString());
-        }
-    }
+     // 6. Routing logic
+     private void routeOrder (Request order){
+         addOrderToZoneQueue(order);
 
-    // 7. Drivers or services can call this
-    public Request getNextOrder(Zone zone) {
-        return zoneQueues.get(zone).poll();
-    }
+     }
+
+     public Request getNextOrder (Zone zone){
+        return getNextOrderFromZoneQueue(zone);
+     }
+
+     @PreDestroy
+     public void shutdown () {
+         dispatcherPool.shutdownNow();
+     }
+
 }

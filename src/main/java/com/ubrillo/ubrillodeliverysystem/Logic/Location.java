@@ -1,5 +1,8 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class Location {
     private double longitude;
     private double  latitude;
@@ -8,6 +11,7 @@ public class Location {
         this.longitude = longitude;
         this.latitude = latitude;
     }
+    public Location(){}
 
     public double getLongitude() {
         return longitude;

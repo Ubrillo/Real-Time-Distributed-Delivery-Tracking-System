@@ -1,8 +1,9 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
+
 public enum RequestStatus {
-    DELIVERED("Delivered"), CREATED("Created"), QUEUED("Queued"),
-    DISPATCHED("Dispatched"), CANCELLED("Cancelled");
+    DELIVERED("Delivered"), CREATED("Created"), QUEUED("Queued"), OUTFORDELIVERY("Out-of-delivery"),
+    DISPATCHED("Dispatched"), CANCELLED("Cancelled"), STAGED("Staged");
     private String status;
     private RequestStatus(String st){
         status = st;

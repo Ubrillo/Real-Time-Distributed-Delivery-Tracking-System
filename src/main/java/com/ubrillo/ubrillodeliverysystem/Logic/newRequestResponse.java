@@ -1,29 +1,34 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
-public class newRequestResponse implements Response{
-    private String customerName, trackId, deliveryAdress, postAddress;
+public class newRequestResponse{
+    private String customerName, requestId; //deliveryAdress, postAddress;
     private String description, time;
+    private RequestStatus status;
+    private Zone deliveryZone;
 
-    public newRequestResponse(Request newRequestObj) {
-        this.customerName = newRequestObj.getCustomerName();
-        this.trackId = newRequestObj.getRequestId();
-        this.deliveryAdress = newRequestObj.getDeliveryAdress();
-        this.description = newRequestObj.getDescription();
-        this.time = newRequestObj.getTime();
-        this.postAddress = newRequestObj.getPickupAdress();
+    public newRequestResponse(Request request) {
+        this.customerName = request.getCustomerName();
+        this.requestId = request.getRequestId();
+        this.description = request.getDescription();
+        this.time = request.getTime();
+        this.status = request.getStatus();
+        this.deliveryZone = request.getDeliveryZone();
     }
 
-    @Override
-    public void newRequestResponse() {
-
+    public String getRequestId() {
+        return requestId;
     }
 
-    public String getPostAddress() {
-        return postAddress;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
-    public void setPostAddress(String postAddress) {
-        this.postAddress = postAddress;
+    public RequestStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RequestStatus status) {
+        this.status = status;
     }
 
     public String getCustomerName() {
@@ -34,21 +39,6 @@ public class newRequestResponse implements Response{
         this.customerName = customerName;
     }
 
-    public String getTrackId() {
-        return trackId;
-    }
-
-    public void setTrackId(String trackId) {
-        this.trackId = trackId;
-    }
-
-    public String getDeliveryAdress() {
-        return deliveryAdress;
-    }
-
-    public void setDeliveryAdress(String deliveryAdress) {
-        this.deliveryAdress = deliveryAdress;
-    }
 
     public String getDescription() {
         return description;
@@ -64,5 +54,13 @@ public class newRequestResponse implements Response{
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public Zone getDeliveryZone() {
+        return deliveryZone;
+    }
+
+    public void setDeliveryZone(Zone deliveryZone) {
+        this.deliveryZone = deliveryZone;
     }
 }
