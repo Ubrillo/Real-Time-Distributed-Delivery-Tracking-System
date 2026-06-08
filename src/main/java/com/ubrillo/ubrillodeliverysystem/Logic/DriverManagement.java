@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class DriverManagement {
     DriverManagement (){}
 

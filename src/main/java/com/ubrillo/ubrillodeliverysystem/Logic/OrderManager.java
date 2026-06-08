@@ -6,6 +6,7 @@ import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
+import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,6 @@ import java.util.List;
 @Service
 public class OrderManager{
     @Autowired
-
     RequestService requestMan;
 
     @Autowired
@@ -40,9 +40,6 @@ public class OrderManager{
     @Autowired
     DriverManagement driverManagement;
 
-    @Autowired
-    Containers containers;
-
 
     public void OrderManager(){}
 
@@ -59,17 +56,19 @@ public class OrderManager{
         String id = request.getRequestId();
         Request order  = orderList.getOrder(id);
         orderList.removeOrder(id);
-
     }
 
     public OrderState getOrder(Request request){
         OrderState state =  orderStateStore.getState(request.getRequestId());
+
+        //if order not found in cache, check database
         if (state == null){
             Request order = getOrderFromDb(request);
             return new OrderState(
                     order.getRequestId(),
                     order.getStatus(),
                     order.getTime(),
+                    request.getCurrentLocation(),
                     request.getDeliveryLocation(),
                     request.getInfo()
             );
@@ -77,40 +76,45 @@ public class OrderManager{
         return state;
     }
 
+
+
     public Request  getOrderFromDb(Request request){
         return databaseAPI.getOrder(request.getRequestId());
     }
 
-    public void trackOrder(Request order){
-        //
+    public OrderState trackOrder(Request order){
+        return getOrder(order);
     }
 
-    public void assignDriver(String name, Zone zone) {
-
+    public void assignDeliveryDriver(String name, Request order) {
         DeliveryDriver driver = driverManagement.getDriver(name);
-        Request order;
-
-        do {
-            order = dispatchQueue2nd.getNextOrder(zone);
-            driver.addToDeliveryList(order);
-        } while (order != null);
+//        if (order == null) {
+//            do {
+//                order = dispatchQueue2nd.getNextOrder(zone);
+//                driver.addToDeliveryList(order);
+//            } while (order != null);
+//        }
+        driver.addToDeliveryList(order);
     }
 
     /*===================DRIVER APIS =======================*/
-
     public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
         Request order = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
             order.addInfo("\n-> out for delivery");
 
-
+            assignDeliveryDriver(req.getUserName(), order);
 
             Notification event = messageParser(order);
             orderEventProducer.publishOrderCreated(event);
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-
         }
+    }
+
+    public void updateOrderGps(signalGPS signal){
+        orderEventProducer.publishGpsUpdate(signal);
+
     }
 
     public void deliveredOutScan(Request request){

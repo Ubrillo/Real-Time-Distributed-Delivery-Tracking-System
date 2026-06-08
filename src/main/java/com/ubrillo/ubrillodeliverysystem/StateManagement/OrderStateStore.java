@@ -41,6 +41,7 @@ public class OrderStateStore {
                 newState.status(),
                 newState.updatedAt(),
                 newState.location(),
+                newState.destination(),
                 history
         );
     }

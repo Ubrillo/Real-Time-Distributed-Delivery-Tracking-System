@@ -4,18 +4,36 @@ import com.ubrillo.ubrillodeliverysystem.Logic.Location;
 import com.ubrillo.ubrillodeliverysystem.Logic.Request;
 import com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus;
 import com.ubrillo.ubrillodeliverysystem.Logic.Zone;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 
 public class OrderEvent {
-    private String customerName, requestId;
-    private String description, time;
+    private String customerName;
+    @Getter
+    private String requestId;
+    private String description;
+    @Setter
+    @Getter
+    private String time;
+    @Setter
+    @Getter
     private RequestStatus status;
     private Zone deliveryZone;
+    @Setter
+    @Getter
     private Instant updatedAt;
+    @Setter
+    @Getter
     private Location location;
+    @Setter
+    @Getter
     private String info;
     private String userEmail;
+
+    @Getter
+    private Location destination;
 
     public OrderEvent(Request request) {
         this.customerName = request.getCustomerName();
@@ -27,87 +45,10 @@ public class OrderEvent {
         this.updatedAt = Instant.now();
         this.info = request.getInfo();
         this.userEmail = request.getEmailAddress();
-    }
-
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
+        this.destination = request.getDeliveryLocation();
+        this.location = request.getCurrentLocation();
     }
 
     public OrderEvent(){}
 
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public Zone getDeliveryZone() {
-        return deliveryZone;
-    }
-
-    public void setDeliveryZone(Zone deliveryZone) {
-        this.deliveryZone = deliveryZone;
-    }
-
-    public RequestStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(RequestStatus status) {
-        this.status = status;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public void setUserEmail(String userEmail) {
-        this.userEmail = userEmail;
-    }
 }

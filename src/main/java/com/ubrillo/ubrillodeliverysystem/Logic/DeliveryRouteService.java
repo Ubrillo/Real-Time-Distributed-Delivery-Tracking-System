@@ -86,6 +86,7 @@ public class DeliveryRouteService {
 
         OsrmTableResponse response = restClient.get()
                 .uri(url)
+                .header("Accept-Encoding", "identity")
                 .retrieve()
                 .body(OsrmTableResponse.class);
 

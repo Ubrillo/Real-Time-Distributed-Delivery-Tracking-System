@@ -10,5 +10,7 @@ public record OrderState(
         RequestStatus status,
         String updatedAt,
         Location location,
+        Location destination,
         String history
+
 ) {}

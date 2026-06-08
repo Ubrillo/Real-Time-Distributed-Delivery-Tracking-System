@@ -1,14 +1,15 @@
 package com.ubrillo.ubrillodeliverysystem.Controller;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
-import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping
+@CrossOrigin(origins = "*")
 public class Controller   {
 
     @Autowired
@@ -17,7 +18,6 @@ public class Controller   {
 
     @PostMapping("api/create-request")
     public void requestReceiver(@RequestBody Request request){
-
         orderManager.createOrder(request);
     }
 
@@ -28,7 +28,8 @@ public class Controller   {
 
     @GetMapping("api/track-order")
     public void trackOrder(Request order){
-        //
+        orderManager.trackOrder(order);
+        System.out.println("calling...");
     }
 
     @GetMapping("api/view-order")
@@ -50,5 +51,18 @@ public class Controller   {
     @PutMapping("api/order-delivered-out-scan")
     public void deliveredOutScan(@RequestBody Request request) {
         orderManager.deliveredOutScan(request);
+    }
+
+    @PutMapping("api/gps.signal")
+    public synchronized void updateGps(@Payload signalGPS signal){
+        orderManager.updateOrderGps(signal);
+    }
+
+    @GetMapping("api/track-order/{orderId}")
+    @SendTo("/gps/topic")
+    public synchronized OrderState trackOrder(@PathVariable String orderId){
+        Request request = new Request("", orderId, "", null, null, "","","");
+        System.out.println("calling...:"+orderId);
+        return orderManager.trackOrder(request);
     }
 }

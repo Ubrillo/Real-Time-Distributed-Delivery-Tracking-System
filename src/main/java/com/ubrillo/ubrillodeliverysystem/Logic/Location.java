@@ -1,34 +1,34 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
+@Getter
 @Embeddable
 public class Location {
+
+    @JsonProperty("lat")
     private double longitude;
+
+    @JsonProperty("lng")
     private double  latitude;
 
-    public Location(double longitude, double latitude) {
+    public Location(double latitude, double longitude) {
         this.longitude = longitude;
         this.latitude = latitude;
     }
     public Location(){}
 
-    public double getLongitude() {
-        return longitude;
-    }
-
     public void setLongitude(double longitude) {
         this.longitude = longitude;
-    }
-
-    public double getLatitude() {
-        return latitude;
     }
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
-    public void setLocation(double longitude, double latitude){
+
+    public void setLocation(double latitude, double longitude){
         this.longitude = longitude;
         this.latitude = latitude;
     }

@@ -84,6 +84,7 @@ public class Request {
         this.postCode = postCode;
     }
 
+
     public void addInfo(String msg){
         info += msg;
     }

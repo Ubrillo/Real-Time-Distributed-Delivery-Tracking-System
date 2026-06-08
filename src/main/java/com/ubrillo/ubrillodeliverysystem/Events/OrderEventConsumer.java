@@ -1,7 +1,9 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
+import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
+import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -10,16 +12,22 @@ import java.time.Instant;
 @Component
 public class OrderEventConsumer {
     @Autowired
+    private GpsService gpsService;
+
+    @Autowired
     private  OrderStateStore stateStore;
 
     @Autowired
     private  EmailNotificationService emailService;
 
+    @Autowired
+    TrackingWebSocketService trackingWebSocketService;
+
     @KafkaListener(
             topics = "order-events",
             groupId = "tracking-service-group"
     )
-    public void consumeOrderCreated(Notification event){
+    private void consumeOrderCreated(Notification event){
         String message =
                 "\n=================[Notification]================"+
                 "\nsender: "+event.sender()+
@@ -34,7 +42,7 @@ public class OrderEventConsumer {
     }
 
     @KafkaListener(topics ="tracking-events")
-    public void consumeOrderState(OrderEvent event){
+    private void consumeOrderState(OrderEvent event){
         String history = addHistory(event);
 
         OrderState state = new OrderState(
@@ -42,10 +50,29 @@ public class OrderEventConsumer {
                 event.getStatus(),
                 event.getTime(),
                 event.getLocation(),
+                event.getDestination(),
                 history
         );
-
         stateStore.updateState(state);
+    }
+
+    @KafkaListener(topics="gps-tracker")
+    private void consumeGpsSignal(signalGPS signal){
+        gpsService.updateLocation(signal);
+    }
+
+    @KafkaListener(topics="order-tracking-udate", groupId="websocket-tracking-service")
+    public void consumeTrackingUpdate(OrderState update){
+        trackingWebSocketService.sendTrackingUpdate(
+                new OrderState(
+                        update.requestId(),
+                        update.status(),
+                        update.updatedAt(),
+                        update.location(),
+                        update.destination(),
+                        update.history()
+                )
+        );
     }
 
     private String  addHistory(OrderEvent event){

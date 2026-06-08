@@ -1,5 +1,6 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
+import com.ubrillo.ubrillodeliverysystem.Logic.signalGPS;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -8,11 +9,17 @@ public class OrderEventProducer {
 
     private final KafkaTemplate<String, Notification> publisher1;
     private final KafkaTemplate<String, OrderEvent> publisher2;
+    private final KafkaTemplate<String, signalGPS>  gpsPublisher;
+
 
     public OrderEventProducer(KafkaTemplate<String, Notification> kafkaTemplate,
-                              KafkaTemplate<String, OrderEvent> kafkaTemplate2){
+                              KafkaTemplate<String, OrderEvent> kafkaTemplate2,
+                              KafkaTemplate<String, signalGPS> gpsPublisher
+    )
+    {
         this.publisher1 = kafkaTemplate;
         this.publisher2 = kafkaTemplate2;
+        this.gpsPublisher = gpsPublisher;
     }
 
     public void publishOrderCreated(Notification event){
@@ -21,6 +28,10 @@ public class OrderEventProducer {
 
     public void publishOrderStateTracker(OrderEvent event){
         publisher2.send("tracking-events", event);
+    }
+
+    public void publishGpsUpdate(signalGPS event){
+        gpsPublisher.send("gps-tracker", event);
     }
 
 }

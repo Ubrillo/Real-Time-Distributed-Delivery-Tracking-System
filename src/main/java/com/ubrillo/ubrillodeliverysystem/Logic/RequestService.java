@@ -18,9 +18,10 @@ public class RequestService {
         if (isValidRequest(request)){
             request.setRequestId(generateTrackingId());
             request.setDescription(request.getDescription());
-            request.setCurrentLocation(new Location(0.0, 0.));
+            request.setCurrentLocation(new Location( -0.1281105, 51.507458));
 
             Coordinate coordinate = getDeliveryCoordinate(request);
+
             request.setDeliveryLocation(new Location(coordinate.longitude(), coordinate.latitude()));
             request.setTime(getCurrentTime());
 

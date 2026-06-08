@@ -5,6 +5,7 @@ import com.ubrillo.ubrillodeliverysystem.Events.Notification;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -23,8 +24,10 @@ public class Containers{
     @Autowired
     private MessageParser messageParser;
 
+    @Getter
     private final BlockingQueue<Request> mainQueue = new LinkedBlockingQueue<>();
     private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
+    @Getter
     private final Map<String, Request> orderList = new LinkedHashMap<>();
     private  final List<Request> batchList = new ArrayList<>();
 
@@ -77,9 +80,6 @@ public class Containers{
             orderEventProducer.publishOrderCreated(event);
         }
     }
-    public BlockingQueue<Request> getMainQueue(){
-        return mainQueue;
-    }
 
     /*---------------------------- ORDER LIST ------------------- */
     public synchronized void addOrderToList(Request order){
@@ -88,10 +88,6 @@ public class Containers{
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         Notification event = messageParser.parser(order);
         orderEventProducer.publishOrderCreated(event);
-    }
-
-    public  Map<String, Request> getOrderList(){
-        return orderList;
     }
 
     public Request getOrderFromList(String Id){
