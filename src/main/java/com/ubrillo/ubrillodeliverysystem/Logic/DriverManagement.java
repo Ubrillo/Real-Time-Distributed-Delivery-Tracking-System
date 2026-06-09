@@ -8,13 +8,19 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DriverManagement {
-    DriverManagement (){}
-
     @Getter
     HashMap<String, DeliveryDriver> drivers;
 
+    public DriverManagement (){
+        drivers = new HashMap<>();
+        loadDrivers();
+    }
+
+
+
     public DeliveryDriver getDriver(String name){
         return drivers.get(name);
+
     }
 
      private void loadDrivers(){

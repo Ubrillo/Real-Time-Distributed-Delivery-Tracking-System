@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping
@@ -14,6 +17,13 @@ public class Controller   {
 
     @Autowired
     private OrderManager orderManager;
+
+//    List<signalGPS> route = List.of(
+//            new signalGPS(new Coordinate(51.5074, -0.1278)),
+//            new signalGPS(new Coordinate(51.5076, -0.1275)),
+//            new signalGPS(new Coordinate(51.5079, -0.1271)),
+//            new signalGPS(new Coordinate(51.5082, -0.1267))
+//    );
 
 
     @PostMapping("api/create-request")
@@ -54,15 +64,24 @@ public class Controller   {
     }
 
     @PutMapping("api/gps.signal")
-    public synchronized void updateGps(@Payload signalGPS signal){
+    public synchronized void updateGps(@RequestBody signalGPS signal){
         orderManager.updateOrderGps(signal);
+        //System.out.println(signal.toString());
     }
 
     @GetMapping("api/track-order/{orderId}")
-    @SendTo("/gps/topic")
+    @SendTo("/gps/topic/user")
     public synchronized OrderState trackOrder(@PathVariable String orderId){
         Request request = new Request("", orderId, "", null, null, "","","");
         System.out.println("calling...:"+orderId);
         return orderManager.trackOrder(request);
     }
+
+//    int index = 0;
+//    @Scheduled(fixedRate = 1000)
+//    public void simulateDriver() {
+//        signalGPS signal = route.get(index);
+//        updateGps(signal);
+//        index = (index + 1) % route.size();
+//    }
 }

@@ -15,7 +15,7 @@ public class TrackingWebSocketService {
 
     public void sendTrackingUpdate(OrderState update){
         messagingTemplate.convertAndSend(
-               "/gps/topic" + update.requestId(),
+               "/gps/topic/user/" + update.requestId(),
                 update
         );
     }

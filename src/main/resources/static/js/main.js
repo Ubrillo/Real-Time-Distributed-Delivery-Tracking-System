@@ -136,11 +136,11 @@ function handleTrackingUpdate(update) {
         updateStatus(update.status);
     }
 
-    if (update.driverLocation && driverMarker) {
+    if (update.location && driverMarker) {
 
-        driverMarker.position = update.driverLocation;
+        driverMarker.position = update.location;
 
-        map.panTo(update.driverLocation);
+        map.panTo(update.location);
     }
 }
 

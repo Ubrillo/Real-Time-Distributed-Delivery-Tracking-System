@@ -23,8 +23,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker (MessageBrokerRegistry config){
-        config.setApplicationDestinationPrefixes("app/");
-        config.enableSimpleBroker("gps/topic/user");
-        config.enableSimpleBroker("gps/topic/driver");
+        config.setApplicationDestinationPrefixes("/app");
+        config.enableSimpleBroker(
+                "/gps/topic/user",
+                                "/gps/topic/driver"
+        );
+
     }
 }

@@ -8,4 +8,6 @@ public class DeliveryScanRequest {
     private Zone deliveryZone;
     @Getter
     private String userName;
+
+    public DeliveryScanRequest(){}
 }

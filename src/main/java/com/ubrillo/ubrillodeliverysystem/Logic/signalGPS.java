@@ -8,4 +8,6 @@ public class signalGPS {
 
     @Getter
     private String sender;
+
+    public signalGPS(){}
 }
