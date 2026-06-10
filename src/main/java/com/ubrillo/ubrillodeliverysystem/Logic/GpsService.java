@@ -57,6 +57,5 @@ public class GpsService {
             System.out.println(currentCoordinate);
 
         }
-
     }
 }
