@@ -2,10 +2,7 @@ package com.ubrillo.ubrillodeliverysystem.Controller;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,12 +15,6 @@ public class Controller   {
     @Autowired
     private OrderManager orderManager;
 
-//    List<signalGPS> route = List.of(
-//            new signalGPS(new Coordinate(51.5074, -0.1278)),
-//            new signalGPS(new Coordinate(51.5076, -0.1275)),
-//            new signalGPS(new Coordinate(51.5079, -0.1271)),
-//            new signalGPS(new Coordinate(51.5082, -0.1267))
-//    );
 
 
     @PostMapping("api/create-request")
