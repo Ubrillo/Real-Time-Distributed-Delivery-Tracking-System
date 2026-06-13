@@ -1,9 +1,9 @@
-package com.ubrillo.ubrillodeliverysystem.StateManagement;
+package com.ubrillo.ubrillodeliverysystem.Cache;
 
 import com.ubrillo.ubrillodeliverysystem.Logic.Location;
 import com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus;
 
-import java.time.Instant;
+import java.io.Serializable;
 
 public record OrderState(
         String requestId,
@@ -13,4 +13,4 @@ public record OrderState(
         Location destination,
         String history
 
-) {}
+) implements Serializable {}

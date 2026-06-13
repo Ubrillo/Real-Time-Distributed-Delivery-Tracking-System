@@ -1,8 +1,6 @@
 package com.ubrillo.ubrillodeliverysystem.WebSocket;
 
-import com.ubrillo.ubrillodeliverysystem.Logic.Coordinate;
-import com.ubrillo.ubrillodeliverysystem.Logic.signalGPS;
-import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
+import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;

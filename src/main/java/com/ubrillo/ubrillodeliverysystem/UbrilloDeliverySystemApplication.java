@@ -4,11 +4,12 @@ import com.ubrillo.ubrillodeliverysystem.Controller.Controller;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
+@EnableCaching
 @RestController
 @SpringBootApplication
 public class UbrilloDeliverySystemApplication {

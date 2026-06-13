@@ -1,13 +1,18 @@
-package com.ubrillo.ubrillodeliverysystem.StateManagement;
+package com.ubrillo.ubrillodeliverysystem.Cache;
 
-import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
-public class OrderStateStore {
+public class CacheLogic implements Cache {
+
     private final Map<String, OrderState> stateMap =
             new ConcurrentHashMap<>();
+
+    public CacheLogic(){}
+
+    public OrderState getState(String requestId){
+        return stateMap.get(requestId);
+    }
 
     public void updateState(OrderState state) {
         OrderState oldState = stateMap.get(state.requestId());
@@ -16,10 +21,6 @@ public class OrderStateStore {
                 updatedState.requestId(),
                 updatedState
         );
-    }
-
-    public OrderState getState(String requestId) {
-        return stateMap.get(requestId);
     }
 
     public Map<String, OrderState> getAllStates() {

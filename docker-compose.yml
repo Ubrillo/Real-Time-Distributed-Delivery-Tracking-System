@@ -24,6 +24,20 @@ services:
 
     volumes:
       - kafka_kraft:/var/lib/kafka/data
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
   db:
     container_name: postgre-delivery-system
     image: postgres:latest
