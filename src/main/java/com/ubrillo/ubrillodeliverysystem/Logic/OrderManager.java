@@ -5,7 +5,7 @@ import com.ubrillo.ubrillodeliverysystem.Events.Notification;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
-import com.ubrillo.ubrillodeliverysystem.Cache.OrderStateStore;
+import com.ubrillo.ubrillodeliverysystem.Cache.OrderStateAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +22,7 @@ public class OrderManager{
     DispatchQueue2nd dispatchQueue2nd;
 
     @Autowired
-    OrderStateStore orderStateStore;
+    OrderStateAPI orderStateStore;
 
     @Autowired
     BatchDispatcher batchDispatcher;

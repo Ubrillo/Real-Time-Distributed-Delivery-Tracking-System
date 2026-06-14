@@ -1,22 +1,22 @@
 package com.ubrillo.ubrillodeliverysystem.Cache;
 
 import org.springframework.data.redis.core.RedisTemplate;
-
+import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CacheLogic implements Cache {
+@Service
+public class OrderStateAPI{
 
     private final Map<String, OrderState> stateMap =
             new ConcurrentHashMap<>();
 
-    private  RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     private final boolean REDIS_CACHE = true;
 
     private static final String KEY_PREFIX = "order:";
 
-    public CacheLogic(){}
 
     public OrderState getState(String requestId){
         if(!REDIS_CACHE){
