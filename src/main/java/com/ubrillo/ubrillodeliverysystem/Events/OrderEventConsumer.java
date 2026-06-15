@@ -2,7 +2,7 @@ package com.ubrillo.ubrillodeliverysystem.Events;
 
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
-import com.ubrillo.ubrillodeliverysystem.Cache.OrderStateAPI;
+import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
 import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,7 +14,7 @@ public class OrderEventConsumer {
     private GpsService gpsService;
 
     @Autowired
-    private OrderStateAPI stateStore;
+    private CacheLogic stateStore;
 
     @Autowired
     private  EmailNotificationService emailService;

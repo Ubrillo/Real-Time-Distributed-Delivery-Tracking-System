@@ -5,7 +5,7 @@ import com.ubrillo.ubrillodeliverysystem.Events.Notification;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
-import com.ubrillo.ubrillodeliverysystem.Cache.OrderStateAPI;
+import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +19,10 @@ public class OrderManager{
     OrderList orderList;
 
     @Autowired
-    DispatchQueue2nd dispatchQueue2nd;
+    DispatchQueue dispatchQueue;
 
     @Autowired
-    OrderStateAPI orderStateStore;
+    CacheLogic orderStateStore;
 
     @Autowired
     BatchDispatcher batchDispatcher;
@@ -95,7 +95,7 @@ public class OrderManager{
 
     /*===================DRIVER APIS =======================*/
     public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
-        Request order = dispatchQueue2nd.getNextOrder(req.getDeliveryZone());
+        Request order = dispatchQueue.getNextOrder(req.getDeliveryZone());
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
             order.addInfo("\n-> out for delivery");

@@ -2,6 +2,7 @@ package com.ubrillo.ubrillodeliverysystem.Cache;
 
 import com.ubrillo.ubrillodeliverysystem.Logic.Location;
 import com.ubrillo.ubrillodeliverysystem.Logic.RequestStatus;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 

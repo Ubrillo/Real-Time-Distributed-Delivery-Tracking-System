@@ -17,7 +17,7 @@ public class BatchDispatcher extends Containers{
     private OrderList orderList;
 
     @Autowired
-    private DispatchQueue2nd dispatchQueue2nd;
+    private DispatchQueue dispatchQueue;
 
 //    @Autowired
 //    private Containers containers;
@@ -39,7 +39,7 @@ public class BatchDispatcher extends Containers{
         if (batch.isEmpty()) return;
 
         for (Request order : batch) {
-            dispatchQueue2nd.addOrder(order);
+            dispatchQueue.addOrder(order);
             order.setStatus(RequestStatus.DISPATCHED);
 
         }

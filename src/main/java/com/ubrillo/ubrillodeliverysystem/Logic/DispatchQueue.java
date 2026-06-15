@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 @Service
-public class DispatchQueue2nd extends Containers implements Runnable{
+public class DispatchQueue extends Containers implements Runnable{
 
     // 1. Main incoming queue (thread-safe)
    // private final Queue<Request> mainQueue = new ConcurrentLinkedQueue<>();
