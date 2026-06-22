@@ -42,7 +42,7 @@ public class Containers{
     public void addOrderToQueue(Request order) {
         order.setStatus(RequestStatus.DISPATCHED);
         mainQueue.add(order);
-        order.addInfo("\n-> order dispatched to main queue");
+        order.addHistory("\n-> order dispatched to main queue");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         Notification event = messageParser.parser(order);
         orderEventProducer.publishOrderCreated(event);
@@ -50,7 +50,7 @@ public class Containers{
 
     public Request getOrderFromQueue(){
         Request order = mainQueue.poll();
-        order.addInfo("\n->order removed from mainqueue");
+        order.addHistory("\n->order removed from mainqueue");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
 
         return order;
@@ -58,7 +58,7 @@ public class Containers{
 
     public Request getNextOrderFromZoneQueue(Zone zone) {
         Request request = zoneQueues.get(zone).poll();
-        request.addInfo("\n-> removed from zone queue "+ zone.toString());
+        request.addHistory("\n-> removed from zone queue "+ zone.toString());
         return request;
     }
 
@@ -72,7 +72,7 @@ public class Containers{
         if (zoneQueue != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
             zoneQueue.add(order);
-            order.addInfo("\n-> moved to staged area: "+zone.toString());
+            order.addHistory("\n-> moved to staged area: "+zone.toString());
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
             Notification event = messageParser.parser(order);
             orderEventProducer.publishOrderCreated(event);
@@ -82,7 +82,7 @@ public class Containers{
     /*---------------------------- ORDER LIST ------------------- */
     public synchronized void addOrderToList(Request order){
         orderList.put(order.getRequestId(), order);
-        order.addInfo("\n-> move to orderlist");
+        order.addHistory("\n-> move to orderlist");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         Notification event = messageParser.parser(order);
         orderEventProducer.publishOrderCreated(event);
@@ -101,7 +101,7 @@ public class Containers{
             Request order = getOrderFromList(id);
             order.setStatus(RequestStatus.CANCELLED);
             orderList.remove(id);
-            order.addInfo("\n-> removed from orderlist");
+            order.addHistory("\n-> removed from orderlist");
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
             Notification event = messageParser.parser(order);
             orderEventProducer.publishOrderCreated(event);
@@ -115,7 +115,7 @@ public class Containers{
 
     public void addOrderToBatchList(Request order){
         batchList.add(order);
-        order.addInfo("\n-> order added orderlist");
+        order.addHistory("\n-> order added orderlist");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
     }
 

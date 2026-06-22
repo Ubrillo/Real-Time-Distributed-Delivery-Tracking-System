@@ -1,66 +1,49 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.Instant;
+
 public class newRequestResponse{
-    private String customerName, requestId; //deliveryAdress, postAddress;
-    private String description, time;
+    @Getter
+    private String customerName;
+    @Getter
+    @Setter
+    private String requestId;
+
+    @Getter
+    @Setter
+    private Instant updateAt;
+    @Getter
+    @Setter
     private RequestStatus status;
-    private Zone deliveryZone;
+
+    @Setter
+    @Getter
+    private String deliveryAddress;
+
+    @Getter
+    @Setter
+    private String postCode;
+
+    @Getter
+    @Setter
+    private String userEmail;
+
+    @Setter
+    @Getter
+    private String description;
 
     public newRequestResponse(Request request) {
         this.customerName = request.getCustomerName();
         this.requestId = request.getRequestId();
-        this.description = request.getDescription();
-        this.time = request.getTime();
+        this.updateAt = request.getUpdateAt();
         this.status = request.getStatus();
-        this.deliveryZone = request.getDeliveryZone();
+        this.deliveryAddress = request.getDeliveryAddress();
+        this.postCode = request.getPostCode();
+        this.userEmail = request.getUserEmail();
+        this.description = request.getDescription();
     }
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-    public RequestStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(RequestStatus status) {
-        this.status = status;
-    }
-
-    public String getCustomerName() {
-        return customerName;
-    }
-
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public Zone getDeliveryZone() {
-        return deliveryZone;
-    }
-
-    public void setDeliveryZone(Zone deliveryZone) {
-        this.deliveryZone = deliveryZone;
-    }
 }

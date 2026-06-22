@@ -6,9 +6,12 @@ import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
 
 @Service
 public class OrderManager{
@@ -36,6 +39,11 @@ public class OrderManager{
     @Autowired
     DriverManagement driverManagement;
 
+    @Autowired
+    private ObjectMapper orderMapper;
+
+    ModelMapper mapper = new ModelMapper();
+
 
     public void OrderManager(){}
 
@@ -54,22 +62,26 @@ public class OrderManager{
         orderList.removeOrder(id);
     }
 
-    public OrderState getOrder(Request request){
-        OrderState state =  orderStateStore.getState(request.getRequestId());
+    public OrderState getOrderDetails(Request request){
+        OrderState orderState =  orderStateStore.getState(request.getRequestId());
+        //if order not found in cache, check database
+        if (orderState == null){
+            Request order = getOrderFromDb(request);
 
+            ModelMapper mapper = new ModelMapper();
+            return mapper.map(order, OrderState.class);
+        }
+        return orderState;
+    }
+
+    public Request getOrder(Request request){
+        OrderState state =  orderStateStore.getState(request.getRequestId());
         //if order not found in cache, check database
         if (state == null){
-            Request order = getOrderFromDb(request);
-            return new OrderState(
-                    order.getRequestId(),
-                    order.getStatus(),
-                    order.getTime(),
-                    request.getCurrentLocation(),
-                    request.getDeliveryLocation(),
-                    request.getInfo()
-            );
+            return getOrderFromDb(request);
+
         }
-        return state;
+        return mapper.map(state, Request.class);
     }
 
 
@@ -79,7 +91,7 @@ public class OrderManager{
     }
 
     public OrderState trackOrder(Request order){
-        return getOrder(order);
+        return mapper.map(order, OrderState.class);
     }
 
     public void assignDeliveryDriver(String name, Request order) {
@@ -98,7 +110,7 @@ public class OrderManager{
         Request order = dispatchQueue.getNextOrder(req.getDeliveryZone());
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
-            order.addInfo("\n-> out for delivery");
+            order.addHistory("\n-> out for delivery");
 
             assignDeliveryDriver(req.getUserName(), order);
 
@@ -117,18 +129,18 @@ public class OrderManager{
         OrderState state =  orderStateStore.getState(request.getRequestId());
         Request order = databaseAPI.getOrder(state.requestId());
         order.setStatus(RequestStatus.DELIVERED);
-        order.setInfo("Delivered");
+        order.setHistory("Delivered");
         order.setDeliveryLocation(state.location());
-        order.setTime(requestMan.getCurrentTime());
+        order.setUpdateAt(Instant.now());
         databaseAPI.updateOrder(order);
-        order.addInfo("\n-> order delivered");
+        order.addHistory("\n-> order delivered");
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
 
         try{
             orderStateStore.removeState(order.getRequestId());
-            order.addInfo("\n-> order deleted from cache");
+            order.addHistory("\n-> order deleted from cache");
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
         }catch(Exception e){
             System.out.println(e);
@@ -160,7 +172,7 @@ public class OrderManager{
                 time,
                 orderId,
                 message,
-                order.getEmailAddress(),
+                order.getUserEmail(),
                 orderStatus
         );
     }

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class BatchDispatcher extends Containers{
-    private static final int BATCH_SIZE = 1;
+    private static final int BATCH_SIZE = 5;
 
     @Autowired
     private OrderList orderList;

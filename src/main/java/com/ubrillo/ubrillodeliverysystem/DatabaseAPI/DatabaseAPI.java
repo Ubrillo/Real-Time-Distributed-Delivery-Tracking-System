@@ -42,7 +42,7 @@ public class DatabaseAPI {
     public void updateOrderInfo(String requestId, String info) {
         Request request = databaseIfz.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
-        request.setInfo(info);
+        request.setHistory(info);
         databaseIfz.save(request);
     }
 }

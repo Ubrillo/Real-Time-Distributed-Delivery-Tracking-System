@@ -1,12 +1,15 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
-import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
+import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
 import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 @Component
 public class OrderEventConsumer {
@@ -21,6 +24,8 @@ public class OrderEventConsumer {
 
     @Autowired
     TrackingWebSocketService trackingWebSocketService;
+
+    ModelMapper mapper = new ModelMapper();
 
     @KafkaListener(
             topics = "order-events",
@@ -47,10 +52,16 @@ public class OrderEventConsumer {
         OrderState state = new OrderState(
                 event.getRequestId(),
                 event.getStatus(),
-                event.getTime(),
+                event.getUpdatedAt(),
                 event.getLocation(),
                 event.getDestination(),
-                history
+                event.getCustomerName(),
+                event.getDescription(),
+                event.getUserEmail(),
+                event.getDeliveryAddress(),
+                event.getPostCode(),
+                event.getHistory()
+
         );
         stateStore.updateState(state);
     }
@@ -69,6 +80,11 @@ public class OrderEventConsumer {
                         update.updatedAt(),
                         update.location(),
                         update.destination(),
+                        update.customerName(),
+                        update.description(),
+                        update.userEmail(),
+                        update.deliveryAddress(),
+                        update.postCode(),
                         update.history()
                 )
         );
@@ -80,7 +96,7 @@ public class OrderEventConsumer {
                 "\ncurrent location: "+event.getLocation()+
                 "\ntime: "+event.getUpdatedAt()+
                 "\nID: "+event.getRequestId()+
-                "\nInfo: "+event.getInfo()+
+                "\nInfo: "+event.getHistory()+
                 "\n"+"------------[END]---------------";
     }
 }

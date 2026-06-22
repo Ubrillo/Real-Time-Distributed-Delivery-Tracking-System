@@ -23,10 +23,6 @@ public class RequestService {
             Coordinate coordinate = getDeliveryCoordinate(request);
 
             request.setDeliveryLocation(new Location(coordinate.longitude(), coordinate.latitude()));
-            request.setTime(getCurrentTime());
-
-            //request.setTime(Instant.now().toString());
-//          //System.out.println("new request created...")
 
              return request;
         }
@@ -36,8 +32,7 @@ public class RequestService {
 
     public boolean isValidRequest(Request request){
         return (request.getCustomerName() != null &&
-                request.getDeliveryZone() != null &&
-                request.getEmailAddress() != null &&
+                request.getUserEmail() != null &&
                 request.getPostCode() != null);
 
     }

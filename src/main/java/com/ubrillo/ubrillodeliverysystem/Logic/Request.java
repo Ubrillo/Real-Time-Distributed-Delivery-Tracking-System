@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.HashMap;
 
 @Entity
@@ -13,17 +14,22 @@ public class Request {
     private String customerName;
     @Setter
     @Getter
-    private String time;
+    private Instant updateAt;
     @Setter
     @Getter
     private String description;
+
     @Getter
     @Setter
-    private String info = "";
+    private String history = "";
     @Setter
     @Getter
-    private String emailAddress;
+    private String userEmail;
+
+    @Setter
+    @Getter
     private String deliveryAddress;
+
     @Getter
     private String postCode;
 
@@ -69,24 +75,25 @@ public class Request {
                    String description,
                    Location currentLocation,
                    Location deliveryLocation,
-                   String time,
+                   String updateAt,
                    String emailAddress,
-                   String postCode) {
+                   String postCode,
+                   String deliveryAddress) {
 
         this.customerName = customerName;
         this.requestId = requestId;
         this.description = description;
         this.currentLocation = currentLocation;
         this.deliveryLocation = deliveryLocation;
-        this.time = time;
+        this.updateAt = Instant.now();
         this.status = RequestStatus.CREATED;
-        this.emailAddress = emailAddress;
+        this.userEmail = emailAddress;
         this.postCode = postCode;
+        this.deliveryAddress = deliveryAddress;
     }
 
-
-    public void addInfo(String msg){
-        info += msg;
+    public void addHistory(String msg){
+        history += msg;
     }
 
 
@@ -100,7 +107,7 @@ public class Request {
                 ", status=" + status +
                 ", currentLocation=" + currentLocation +
                 ", deliveryLocation=" + deliveryLocation +
-                ", time='" + time + '\'' +
+                ", time='" + updateAt + '\'' +
                 '}';
     }
 }

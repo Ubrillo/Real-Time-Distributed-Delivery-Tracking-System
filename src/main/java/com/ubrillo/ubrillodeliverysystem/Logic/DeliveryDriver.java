@@ -1,5 +1,4 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
-
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -45,7 +44,6 @@ public class DeliveryDriver {
         this.coordinate = coordinate;
         ordersList = new ArrayList<>();
     }
-
 
     @Override
     public String toString() {

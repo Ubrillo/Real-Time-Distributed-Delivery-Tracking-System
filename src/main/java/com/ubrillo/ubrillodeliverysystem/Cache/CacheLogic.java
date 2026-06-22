@@ -1,5 +1,6 @@
 package com.ubrillo.ubrillodeliverysystem.Cache;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.util.Map;
@@ -13,9 +14,9 @@ public class CacheLogic {
 
     private RedisTemplate<String, OrderState> redisTemplate;
 
-    private final boolean REDIS_CACHE = true;
+    private final boolean REDIS_CACHE = false;
 
-    private static final String KEY_PREFIX = "order:";
+    private static final String KEY_PREFI = "order:";
 
 
     public CacheLogic(RedisTemplate<String, OrderState> redisTemplate) {
@@ -26,11 +27,10 @@ public class CacheLogic {
         if(!REDIS_CACHE){
             return stateMap.get(requestId);
         }
-        return (OrderState)  redisTemplate.opsForValue().get(KEY_PREFIX+requestId);
+        return (OrderState)  redisTemplate.opsForValue().get(KEY_PREFI+requestId);
     }
 
     public void updateState(OrderState state) {
-
         if (!REDIS_CACHE){
             OrderState oldState = stateMap.get(state.requestId());
             OrderState updatedState = updateHistory(oldState, state);
@@ -40,12 +40,10 @@ public class CacheLogic {
             );
             return ;
         }
-        redisTemplate.opsForValue().set(KEY_PREFIX + state.requestId(), state);
-
+        redisTemplate.opsForValue().set(KEY_PREFI + state.requestId(), state);
     }
 
     public Map<String, OrderState> getAllStates() {
-
         return stateMap;
     }
 
@@ -54,23 +52,17 @@ public class CacheLogic {
             stateMap.remove(requestId);
             return ;
         }
-        redisTemplate.delete(KEY_PREFIX + requestId);
+        redisTemplate.delete(KEY_PREFI + requestId);
 
     }
 
-    private OrderState  updateHistory(OrderState oldState, OrderState newState) {
+    private OrderState updateHistory(OrderState oldState, OrderState newState) {
         String history = "";
 
         if (oldState != null){
             history = oldState.history() + newState.history();
         }
-        return new OrderState(
-                newState.requestId(),
-                newState.status(),
-                newState.updatedAt(),
-                newState.location(),
-                newState.destination(),
-                history
-        );
+        ModelMapper mapper = new ModelMapper();
+        return mapper.map(oldState, OrderState.class);
     }
 }

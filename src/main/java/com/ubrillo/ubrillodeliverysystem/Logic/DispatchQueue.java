@@ -31,38 +31,8 @@ public class DispatchQueue extends Containers implements Runnable{
 
     // 3. Called by Controller
     public void addOrder(Request order) {
-
         addOrderToQueue(order);
-
     }
-
-//     //Background dispatcher starter
-//    @PostConstruct
-//    public void startDispatcher() {
-//        Thread dispatcherThread = new Thread(this);
-//        dispatcherThread.setDaemon(true);
-//        dispatcherThread.start();
-//    }
-//
-//     //Background loop (runs forever)
-//     @Override
-//     public void run() {
-//         while (true) {
-//             Request order = mainQueue.poll();
-//
-//             if (order != null) {
-//                 routeOrder(order);
-//             }
-//             try {
-//                 Thread.sleep(100); // prevents CPU overload
-//             }
-//              catch(InterruptedException e){
-//                     Thread.currentThread().interrupt();
-//                     break;
-//                 }
-//
-//             }
-//     }
 
     @PostConstruct
     public void startDispatcher() {
@@ -93,7 +63,6 @@ public class DispatchQueue extends Containers implements Runnable{
      // 6. Routing logic
      private void routeOrder (Request order){
          addOrderToZoneQueue(order);
-
      }
 
      public Request getNextOrder (Zone zone){

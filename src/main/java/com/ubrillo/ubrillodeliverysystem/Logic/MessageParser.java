@@ -34,7 +34,7 @@ public class MessageParser {
                 time,
                 orderId,
                 message,
-                order.getEmailAddress(),
+                order.getUserEmail(),
                 orderStatus
         );
     }

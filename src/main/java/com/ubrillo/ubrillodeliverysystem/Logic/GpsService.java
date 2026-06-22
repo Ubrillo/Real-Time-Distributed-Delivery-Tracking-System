@@ -1,12 +1,11 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
+import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
-import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Service
 public class GpsService {
@@ -21,7 +20,6 @@ public class GpsService {
 
     @Autowired
     OrderEventProducer orderEventProducer;
-
 
     public GpsService(){}
 
@@ -42,14 +40,8 @@ public class GpsService {
 
                 orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
 
-                trackingWebSocketService.sendTrackingUpdate(new OrderState(
-                        order.getRequestId(),
-                        order.getStatus(),
-                        Instant.now().toString(),
-                        order.getCurrentLocation(),
-                        order.getDeliveryLocation(),
-                        order.getInfo()
-                ));
+                ModelMapper mapper = new ModelMapper();
+                trackingWebSocketService.sendTrackingUpdate(mapper.map(order, OrderState.class));
             }
             System.out.println(previousCoordinate);
             previousCoordinate = currentCoordinate;
