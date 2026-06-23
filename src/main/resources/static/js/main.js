@@ -59,14 +59,14 @@ async function initMap() {
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
     map = new Map(document.getElementById("map"), {
-        center: tracking.location,
+        center: tracking.currentLocation,
         zoom: 14,
         mapId: "DEMO_MAP_ID"
     });
 
     pickupMarker = new AdvancedMarkerElement({
         map,
-        position: tracking.location,
+        position: tracking.currentLocation,
         title: "Pickup location"
     });
 
@@ -78,7 +78,7 @@ async function initMap() {
 
     driverMarker = new AdvancedMarkerElement({
         map,
-        position: tracking.location,
+        position: tracking.currentLocation,
         title: "Driver location"
     });
 
@@ -136,11 +136,11 @@ function handleTrackingUpdate(update) {
         updateStatus(update.status);
     }
 
-    if (update.location && driverMarker) {
+    if (update.currentLocation && driverMarker) {
 
-        driverMarker.position = update.location;
+        driverMarker.position = update.currentLocation;
 
-        map.panTo(update.location);
+        map.panTo(update.currentLocation);
     }
 }
 

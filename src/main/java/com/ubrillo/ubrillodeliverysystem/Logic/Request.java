@@ -12,9 +12,11 @@ public class Request {
     @Setter
     @Getter
     private String customerName;
+
     @Setter
     @Getter
     private Instant updateAt;
+
     @Setter
     @Getter
     private String description;
@@ -22,6 +24,7 @@ public class Request {
     @Getter
     @Setter
     private String history = "";
+
     @Setter
     @Getter
     private String userEmail;
@@ -31,6 +34,7 @@ public class Request {
     private String deliveryAddress;
 
     @Getter
+    @Setter
     private String postCode;
 
     @Setter
@@ -66,6 +70,10 @@ public class Request {
     })
     private Location deliveryLocation;
 
+    @Setter
+    @Getter
+    private String deliveryDriver;
+
     public Request() {
         // REQUIRED
     }
@@ -73,23 +81,19 @@ public class Request {
     public Request(String customerName,
                    String requestId,
                    String description,
-                   Location currentLocation,
-                   Location deliveryLocation,
-                   String updateAt,
                    String emailAddress,
                    String postCode,
-                   String deliveryAddress) {
+                   String deliveryAddress
+
+    ) {
 
         this.customerName = customerName;
         this.requestId = requestId;
         this.description = description;
-        this.currentLocation = currentLocation;
-        this.deliveryLocation = deliveryLocation;
-        this.updateAt = Instant.now();
-        this.status = RequestStatus.CREATED;
         this.userEmail = emailAddress;
         this.postCode = postCode;
         this.deliveryAddress = deliveryAddress;
+
     }
 
     public void addHistory(String msg){

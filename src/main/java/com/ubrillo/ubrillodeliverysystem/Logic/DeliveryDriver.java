@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 
 public class DeliveryDriver {
-
     @Getter
     @Setter
     String name;
@@ -18,11 +17,24 @@ public class DeliveryDriver {
 
     @Getter
     @Setter
-    Location location;
+    Location currentLocation;
+
+    @Getter
+    @Setter
+    Location previousLocation;
+
+    @Getter
+    @Setter
+    Location nextDeliveryDestination;
+
+    @Getter
+    @Setter
+    ArrayList<Location>destinations;
 
     @Getter
     @Setter
     Coordinate coordinate;
+
 
     @Getter
     @Setter
@@ -32,17 +44,27 @@ public class DeliveryDriver {
     @Setter
     Zone deliveryZone;
 
+    public DeliveryDriver(){}
+
     public DeliveryDriver(
             String name,
             String id,
-            Location location,
+            Location currentLocation,
             Coordinate coordinate
     ){
         this.name = name;
         this.id = id;
-        this.location = location;
+        this.currentLocation = currentLocation;
         this.coordinate = coordinate;
         ordersList = new ArrayList<>();
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        this.currentLocation = currentLocation;
+    }
+
+    public void setCurrentLocation(Coordinate xy){
+        currentLocation = new Location(xy.latitude(), xy.longitude());
     }
 
     @Override
@@ -50,13 +72,13 @@ public class DeliveryDriver {
         return "DeliveryDriver{" +
                 "name='" + name + '\'' +
                 ", id='" + id + '\'' +
-                ", location=" + location +
+                ", currentLocation=" + currentLocation +
+                ", previousLocation=" + previousLocation +
                 ", coordinate=" + coordinate +
-                ", orders=" + ordersList +
+                ", ordersList=" + ordersList +
                 ", deliveryZone=" + deliveryZone +
                 '}';
     }
-
     public void addToDeliveryList(Request order) {
         ordersList.add(order);
     }

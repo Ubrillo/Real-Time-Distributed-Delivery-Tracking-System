@@ -19,12 +19,12 @@ public class RequestService {
             request.setRequestId(generateTrackingId());
             request.setDescription(request.getDescription());
             request.setCurrentLocation(new Location( -0.1281105, 51.507458));
-
             Coordinate coordinate = getDeliveryCoordinate(request);
-
             request.setDeliveryLocation(new Location(coordinate.longitude(), coordinate.latitude()));
+            request.setUpdateAt(Instant.now());
+            request.setStatus(RequestStatus.CREATED);
 
-             return request;
+            return request;
         }
         System.out.println("unsucessful...");
         return null;

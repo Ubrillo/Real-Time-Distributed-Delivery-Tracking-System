@@ -20,6 +20,7 @@ public class DispatchQueue extends Containers implements Runnable{
     // 2. Zone queues (thread-safe + scalable)
     private final Map<Zone, Queue<Request>> zoneQueues = new ConcurrentHashMap<>();
 
+
     @Autowired
     private DatabaseAPI databaseAPI;
 
@@ -51,6 +52,8 @@ public class DispatchQueue extends Containers implements Runnable{
             try {
                 Request order = getMainQueue().take();   // wait until order arrives
                 Thread.sleep(1000);                 // simulate 1 second scan time
+                Zone zone = determineZone(order.getDeliveryLocation());
+                order.setDeliveryZone(zone);
                 routeOrder(order);
 
             } catch (InterruptedException e) {
@@ -58,11 +61,34 @@ public class DispatchQueue extends Containers implements Runnable{
                 break;
             }
         }
-    }
 
+    }
      // 6. Routing logic
      private void routeOrder (Request order){
          addOrderToZoneQueue(order);
+     }
+
+     private Zone  determineZone(Location xy){
+        if (xy.getLatitude() <= GpsService.getBaseCoordinate().latitude()&&
+            xy.getLongitude() >= GpsService.getBaseCoordinate().longitude()
+
+        ){
+            return Zone.NORTHWEST;
+        }
+
+        if (xy.getLatitude() > GpsService.getBaseCoordinate().latitude() &&
+                xy.getLongitude() >= GpsService.getBaseCoordinate().longitude()
+        ) {
+           return  Zone.NORTHEAST;
+        }
+
+        if (xy.getLatitude() <= GpsService.getBaseCoordinate().latitude() &&
+                xy.getLongitude() <= GpsService.getBaseCoordinate().longitude()
+        ) {
+            return  Zone.SOUTHWEST;
+        }
+
+        return  Zone.SOUTHEAST;
      }
 
      public Request getNextOrder (Zone zone){

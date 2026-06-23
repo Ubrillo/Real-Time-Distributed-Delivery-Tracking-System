@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class DriverManagement {
     @Getter
     HashMap<String, DeliveryDriver> drivers;
@@ -21,16 +21,27 @@ public class DriverManagement {
     }
 
      private void loadDrivers(){
-        String names[] = {"Jack", "Dave"};
+        String names[] = {"Jack", "Dave", "Joe", "Mike"};
 
+        double lat = GpsService.getBaseCoordinate().latitude();
+        double lon = GpsService.getBaseCoordinate().longitude();
+        Zone zone = null;
         for (int i=0; i < names.length; i++){
+//            zone = switch (names[i]) {
+//                case "Jack" -> Zone.NORTHWEST;
+//                case "Dave" -> Zone.NORTHEAST;
+//                case "Joe" -> Zone.SOUTHWEST;
+//                case "Mike" -> Zone.SOUTHEAST;
+//                default -> zone;
+//            };
             drivers.put(
                     names[i],
                     new DeliveryDriver(
                             names[i],
                             Integer.toString(i+1),
-                            new Location(0., 0.),
-                            new Coordinate(0., 0.)
+                            new Location(lat, lon),
+                            //new Location(lat, lon),
+                            new Coordinate(lat, lon)
                     )
             );
         }

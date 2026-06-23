@@ -1,6 +1,7 @@
 package com.ubrillo.ubrillodeliverysystem.Cache;
 
-import org.modelmapper.ModelMapper;
+import com.ubrillo.ubrillodeliverysystem.Logic.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.util.Map;
@@ -17,6 +18,9 @@ public class CacheLogic {
     private final boolean REDIS_CACHE = false;
 
     private static final String KEY_PREFI = "order:";
+
+    @Autowired
+    private ObjectMapper mapper;
 
 
     public CacheLogic(RedisTemplate<String, OrderState> redisTemplate) {
@@ -62,7 +66,9 @@ public class CacheLogic {
         if (oldState != null){
             history = oldState.history() + newState.history();
         }
-        ModelMapper mapper = new ModelMapper();
-        return mapper.map(oldState, OrderState.class);
+//        ModelMapper mapper = new ModelMapper();
+//        return mapper.map(oldState, OrderState.class);
+
+        return mapper.orderStateToOrderState(newState);
     }
 }

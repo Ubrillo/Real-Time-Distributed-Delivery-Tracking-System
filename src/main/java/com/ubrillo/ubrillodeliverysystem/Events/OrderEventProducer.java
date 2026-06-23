@@ -22,6 +22,7 @@ public class OrderEventProducer {
         this.gpsPublisher = gpsPublisher;
     }
 
+    //
     public void publishOrderCreated(Notification event){
         publisher1.send("order-events", event.sender(), event);
     }

@@ -17,6 +17,9 @@ public record OrderState(
         String userEmail,
         String deliveryAddress,
         String postCode,
+        String deliveryDriver,
         String history
 
-) implements Serializable {}
+) implements Serializable {
+
+}

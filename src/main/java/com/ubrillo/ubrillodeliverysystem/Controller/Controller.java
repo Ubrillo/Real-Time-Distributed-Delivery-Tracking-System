@@ -21,19 +21,19 @@ public class Controller {
     }
 
     @PostMapping("api/cancel-request")
-    public void cancelOrder(@RequestBody Request request) {
-        orderManager.cancelOrder(request);
+    public newRequestResponse cancelOrder(@RequestBody Request request) {
+        return new newRequestResponse(orderManager.cancelOrder(request));
     }
 
-    @GetMapping("api/track-order")
-    public void trackOrder(Request order) {
-        orderManager.trackOrder(order);
-        System.out.println("calling...");
-    }
+//    @GetMapping("api/track-order")
+//    public void trackOrder(Request order) {
+//        orderManager.trackOrder(order);
+//        System.out.println("calling...");
+//    }
 
     @GetMapping("api/view-order")
-    public Request getOrder(@RequestBody Request request) {
-        return orderManager.getOrder(request);
+    public newRequestResponse getOrder(@RequestBody Request request) {
+        return new newRequestResponse(orderManager.getOrder(request));
     }
 
     @GetMapping("api/view-order-db")
@@ -43,10 +43,13 @@ public class Controller {
 
     @GetMapping("api/track-order/{orderId}")
     @SendTo("/gps/topic/user")
-    public synchronized OrderState trackOrder(@PathVariable String orderId) {
-        Request request = new Request("", orderId, "", null, null, "", "", "", "");
-        System.out.println("calling...:" + orderId);
-        return orderManager.trackOrder(request);
+    public synchronized GpsTrackingResponse trackOrderLocation(@PathVariable String orderId) {
+        Request request = new Request("", orderId, "", "", "", "");
+        //System.out.println("calling...:" + orderId);
+        GpsTrackingResponse response  =  orderManager.trackOrderLocation(request);
+        //return orderManager.trackOrderLocation(request);
+//        System.out.println(response);
+        return response;
     }
 
     /*===================DRIVER APIS =======================*/
@@ -68,8 +71,8 @@ public class Controller {
 
     /*=====================ADMIN APIS===================*/
     @GetMapping("api/admin/view-order")
-    public OrderState getOrderDetails(@RequestBody Request request) {
-        return orderManager.getOrderDetails(request);
+    public Request getOrderDetails(@RequestBody Request request) {
+        return orderManager.getOrder(request);
     }
 
 

@@ -12,13 +12,17 @@ import java.time.Instant;
 public class OrderEvent {
     @Getter
     private String customerName;
+
     @Getter
     private String requestId;
+
     @Getter
     private String description;
+
     @Setter
     @Getter
     private String updateAt;
+
     @Setter
     @Getter
     private RequestStatus status;
@@ -42,10 +46,13 @@ public class OrderEvent {
     private Location destination;
 
     @Getter
-    String deliveryAddress;
+    private String deliveryAddress;
 
     @Getter
-    String postCode;
+    private String postCode;
+
+    @Getter
+    String deliveryDriver;
 
     public OrderEvent(Request request) {
         this.customerName = request.getCustomerName();
@@ -60,6 +67,7 @@ public class OrderEvent {
         this.location = request.getCurrentLocation();
         this.deliveryAddress = request.getDeliveryAddress();
         this.postCode = request.getPostCode();
+        this.deliveryDriver = request.getDeliveryDriver();
     }
 
     public OrderEvent(){}

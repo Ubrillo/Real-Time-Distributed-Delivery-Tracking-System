@@ -4,7 +4,6 @@ import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import com.ubrillo.ubrillodeliverysystem.Logic.*;
 import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
 import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,6 @@ public class OrderEventConsumer {
     @Autowired
     TrackingWebSocketService trackingWebSocketService;
 
-    ModelMapper mapper = new ModelMapper();
 
     @KafkaListener(
             topics = "order-events",
@@ -60,8 +58,8 @@ public class OrderEventConsumer {
                 event.getUserEmail(),
                 event.getDeliveryAddress(),
                 event.getPostCode(),
+                event.getDeliveryDriver(),
                 event.getHistory()
-
         );
         stateStore.updateState(state);
     }
@@ -73,21 +71,32 @@ public class OrderEventConsumer {
 
     @KafkaListener(topics="order-tracking-udate", groupId="websocket-tracking-service")
     public void consumeTrackingUpdate(OrderState update){
-        trackingWebSocketService.sendTrackingUpdate(
-                new OrderState(
-                        update.requestId(),
-                        update.status(),
-                        update.updatedAt(),
-                        update.location(),
-                        update.destination(),
-                        update.customerName(),
-                        update.description(),
-                        update.userEmail(),
-                        update.deliveryAddress(),
-                        update.postCode(),
-                        update.history()
-                )
-        );
+//        trackingWebSocketService.sendTrackingUpdate(
+//                new OrderState(
+//                        update.requestId(),
+//                        update.status(),
+//                        update.updatedAt(),
+//                        update.location(),
+//                        update.destination(),
+//                        update.customerName(),
+//                        update.description(),
+//                        update.userEmail(),
+//                        update.deliveryAddress(),
+//                        update.postCode(),
+//                        update.deliveryDriver(),
+//                        update.history()
+//                )
+//        );
+////        double lat, lon;
+//        lat = currentCoordinate.latitude();
+//        lon = currentCoordinate.longitude();
+//        GpsTrackingResponse response = GpsTrackingResponse.builder().
+//                .
+//                destination(order.getDeliveryLocation()).
+//                status(order.getStatus()).
+//                build();
+//        trackingWebSocketService.sendTrackingUpdate(
+//        );
     }
 
     private String  addHistory(OrderEvent event){

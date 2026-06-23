@@ -32,4 +32,9 @@ public class Location {
         this.longitude = longitude;
         this.latitude = latitude;
     }
+
+    public void setLocation(Coordinate xy){
+        this.longitude = xy.longitude();
+        this.latitude = xy.latitude();
+    }
 }

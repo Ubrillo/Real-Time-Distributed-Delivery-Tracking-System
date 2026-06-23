@@ -56,10 +56,15 @@ public class Containers{
         return order;
     }
 
+
+    /*============================= ZONE QUEUE========================*/
+
     public Request getNextOrderFromZoneQueue(Zone zone) {
-        Request request = zoneQueues.get(zone).poll();
-        request.addHistory("\n-> removed from zone queue "+ zone.toString());
-        return request;
+        Request order = zoneQueues.get(zone).poll();
+        order.addHistory("\n-> removed from zone queue "+ zone.toString());
+//        Notification event = messageParser.parser(order);
+//        orderEventProducer.publishOrderCreated(event);
+        return order;
     }
 
     public Queue<Request> getZoneQueue(Zone zone){
@@ -74,8 +79,7 @@ public class Containers{
             zoneQueue.add(order);
             order.addHistory("\n-> moved to staged area: "+zone.toString());
             orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-            Notification event = messageParser.parser(order);
-            orderEventProducer.publishOrderCreated(event);
+
         }
     }
 

@@ -6,7 +6,7 @@ import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
-import org.modelmapper.ModelMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -40,9 +40,8 @@ public class OrderManager{
     DriverManagement driverManagement;
 
     @Autowired
-    private ObjectMapper orderMapper;
+    private ObjectMapper mapper;
 
-    ModelMapper mapper = new ModelMapper();
 
 
     public void OrderManager(){}
@@ -56,10 +55,11 @@ public class OrderManager{
         return new newRequestResponse(order);
     }
 
-    public void cancelOrder(Request request){
+    public Request cancelOrder(Request request){
         String id = request.getRequestId();
         Request order  = orderList.getOrder(id);
         orderList.removeOrder(id);
+        return order;
     }
 
     public OrderState getOrderDetails(Request request){
@@ -68,8 +68,7 @@ public class OrderManager{
         if (orderState == null){
             Request order = getOrderFromDb(request);
 
-            ModelMapper mapper = new ModelMapper();
-            return mapper.map(order, OrderState.class);
+            return mapper.requestToOrderState(order);
         }
         return orderState;
     }
@@ -81,17 +80,27 @@ public class OrderManager{
             return getOrderFromDb(request);
 
         }
-        return mapper.map(state, Request.class);
+        System.out.println(state.toString());
+        return mapper.orderStateToRequest(state);
     }
-
-
 
     public Request  getOrderFromDb(Request request){
         return databaseAPI.getOrder(request.getRequestId());
     }
 
-    public OrderState trackOrder(Request order){
-        return mapper.map(order, OrderState.class);
+    public  GpsTrackingResponse trackOrderLocation(Request order){
+
+        OrderState state = orderStateStore.getState(order.getRequestId());
+        //return state;
+        DeliveryDriver driver =  driverManagement.getDriver(state.deliveryDriver());
+
+        GpsTrackingResponse response = new GpsTrackingResponse(
+                driver.currentLocation,
+                state.destination()
+        );
+        response.setRequestId(state.requestId());
+        response.setStatus(state.status());
+        return response;
     }
 
     public void assignDeliveryDriver(String name, Request order) {
@@ -106,13 +115,14 @@ public class OrderManager{
     }
 
     /*===================DRIVER APIS =======================*/
-    public void deliveryOutScan(@RequestBody DeliveryScanRequest req) {
-        Request order = dispatchQueue.getNextOrder(req.getDeliveryZone());
+    public void deliveryOutScan(@RequestBody DeliveryScanRequest payload) {
+        Request order = dispatchQueue.getNextOrder(payload.getDeliveryZone());
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
             order.addHistory("\n-> out for delivery");
 
-            assignDeliveryDriver(req.getUserName(), order);
+            order.setDeliveryDriver(payload.getUserName());
+            assignDeliveryDriver(payload.getUserName(), order);
 
             Notification event = messageParser(order);
             orderEventProducer.publishOrderCreated(event);
@@ -122,7 +132,6 @@ public class OrderManager{
 
     public void updateOrderGps(signalGPS signal){
         orderEventProducer.publishGpsUpdate(signal);
-
     }
 
     public void deliveredOutScan(Request request){

@@ -5,5 +5,8 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface ObjectMapper {
-    Request mapTO(OrderState state);
+    Request orderStateToRequest(OrderState state);
+    OrderState requestToOrderState(Request request);
+    OrderState orderStateToOrderState(OrderState state);
+
 }
