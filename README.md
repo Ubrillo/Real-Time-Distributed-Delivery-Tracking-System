@@ -4,7 +4,7 @@ A backend-heavy, event-driven delivery tracking platform built with **Spring Boo
 
 > 🚧 **Status:** Actively in development. Core real-time pipeline is functional; resilience/security features (load balancing, JWT, centralized logging) are in progress — see [Roadmap](#-roadmap--further-work) below.
 
-![System Architecture](images/architecture.png)
+![System Architecture](system_architecture.png)
 ---
 
 ## 📐 Architecture Overview
