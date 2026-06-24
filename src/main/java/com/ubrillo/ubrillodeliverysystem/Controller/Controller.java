@@ -13,6 +13,9 @@ public class Controller {
     @Autowired
     private OrderManager orderManager;
 
+    @Autowired
+    private DriverSimulator sim;
+
     /*===========================USER API===================*/
     @PostMapping("api/create-request")
     public newRequestResponse requestReceiver(@RequestBody Request request) {

@@ -1,5 +1,4 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
-
 import com.ubrillo.ubrillodeliverysystem.DatabaseAPI.DatabaseAPI;
 import com.ubrillo.ubrillodeliverysystem.Events.Notification;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
@@ -122,5 +121,4 @@ public class Containers{
         order.addHistory("\n-> order added orderlist");
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
     }
-
 }

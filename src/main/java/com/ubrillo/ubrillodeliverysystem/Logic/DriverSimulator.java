@@ -1,32 +1,36 @@
-//package com.ubrillo.ubrillodeliverysystem.Logic;
-//
-//import com.ubrillo.ubrillodeliverysystem.Controller.Controller;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.scheduling.annotation.Scheduled;
-//
-//import java.util.List;
-//
-//public class DriverSimulator {
-//    List<signalGPS> route = List.of(
-//            new signalGPS(new Coordinate(51.5074, -0.1278)),
-//            new signalGPS(new Coordinate(51.5076, -0.1275)),
-//            new signalGPS(new Coordinate(51.5079, -0.1271)),
-//            new signalGPS(new Coordinate(51.5082, -0.1267))
-//    );
-//
-//    @Autowired
-//    Controller controller;
-//
-//    int index = 0;
-//
-//    @Scheduled(fixedRate = 1000)
-//    public void simulateDriver() {
-//
-//        signalGPS signal = route.get(index);
-//        controller.updateGps(signal);
-//        index = (index + 1) % route.size();
-//    }
-//
-//    public DriverSimulator(){}
-//
-//}
+package com.ubrillo.ubrillodeliverysystem.Logic;
+
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DriverSimulator {
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private double lat = 51.5074;  // London start
+    private double lng = -0.1278;
+
+    public DriverSimulator(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    @Scheduled(fixedRate = 2000) // every 2 seconds
+    public void simulateMovement() {
+
+        // simulate movement (random walk)
+        lat += (Math.random() - 0.5) * 0.001;
+        lng += (Math.random() - 0.5) * 0.001;
+
+        DriverLocationRequest update = new DriverLocationRequest();
+        update.setDriverId("SIM_DRIVER_1");
+        update.setLatitude(lat);
+        update.setLongitude(lng);
+
+        System.out.println("Simulated driver update: " + update);
+
+        // push to all users
+        messagingTemplate.convertAndSend("/gps/topic/user/", update);
+    }
+}
