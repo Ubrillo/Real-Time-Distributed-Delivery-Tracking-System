@@ -2,7 +2,7 @@ package com.ubrillo.ubrillodeliverysystem.Logic;
 
 
 public enum RequestStatus {
-    DELIVERED("Delivered"), CREATED("Created"), QUEUED("Queued"), OUTFORDELIVERY("Out-of-delivery"),
+    DELIVERED("Delivered"), CREATED("Created"), QUEUED("Queued"), OUTFORDELIVERY("Out-for-delivery"),
     DISPATCHED("Dispatched"), CANCELLED("Cancelled"), STAGED("Staged");
     private String status;
     private RequestStatus(String st){

@@ -1,15 +1,14 @@
-
-
-var trackingPage = document.querySelector('#tracking-page');
-var mapPage =  document.querySelector('#map');
-var trackingForm = document.querySelector('#trackingForm');
-
-
+let trackingPage = document.querySelector('#tracking-page');
+let mapPage = document.querySelector('#map');
+let trackingForm = document.querySelector('#trackingForm');
 
 let map;
 let driverMarker;
 let pickupMarker;
 let destinationMarker;
+
+let directionsService;
+let directionsRenderer;
 
 let stompClient = null;
 let orderId = null;
@@ -18,23 +17,17 @@ const backendBaseUrl = "http://localhost:8080";
 
 
 // =========================
-// Get Order ID safely
+// Get Order ID
 // =========================
 function getOrderId() {
-    const id = document.querySelector('#orderId').value.trim();
-    console.log("Order ID:", id);
-    return id;
+    return document.querySelector('#orderId').value.trim();
 }
 
 
 // =========================
-// Fetch tracking data (REST)
+// Fetch initial data
 // =========================
 async function fetchInitialTrackingData() {
-
-    if (!orderId) {
-        throw new Error("Order ID is missing");
-    }
 
     const response = await fetch(
         `${backendBaseUrl}/api/track-order/${orderId}`
@@ -49,14 +42,33 @@ async function fetchInitialTrackingData() {
 
 
 // =========================
-// Initialize Google Map
+// Calculate direction angle
+// =========================
+function calculateHeading(start, end) {
+
+    const lat1 = start.lat * Math.PI / 180;
+    const lng1 = start.lng * Math.PI / 180;
+    const lat2 = end.lat * Math.PI / 180;
+    const lng2 = end.lng * Math.PI / 180;
+
+    const y = Math.sin(lng2 - lng1) * Math.cos(lat2);
+    const x = Math.cos(lat1) * Math.sin(lat2) -
+              Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
+
+    const brng = Math.atan2(y, x);
+
+    return (brng * 180 / Math.PI + 360) % 360;
+}
+
+
+// =========================
+// INIT MAP
 // =========================
 async function initMap() {
 
     const tracking = await fetchInitialTrackingData();
-    console.log(tracking);
+
     const { Map } = await google.maps.importLibrary("maps");
-    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
     map = new Map(document.getElementById("map"), {
         center: tracking.currentLocation,
@@ -64,23 +76,67 @@ async function initMap() {
         mapId: "DEMO_MAP_ID"
     });
 
-    pickupMarker = new AdvancedMarkerElement({
+    const { Marker } = await google.maps.importLibrary("marker");
+
+
+    // =========================
+    // Pickup Marker
+    // =========================
+    pickupMarker = new Marker({
         map,
         position: tracking.currentLocation,
-        title: "Pickup location"
+        title: "Pickup",
+        label: "P"
     });
 
-    destinationMarker = new AdvancedMarkerElement({
+
+    // =========================
+    // Destination Marker
+    // =========================
+    destinationMarker = new Marker({
         map,
         position: tracking.destination,
-        title: "Destination location"
+        title: "Destination",
+        label: "D"
     });
 
-    driverMarker = new AdvancedMarkerElement({
-        map,
+
+    // =========================
+    // DRIVER MARKER (ARROW)
+    // =========================
+    driverMarker = new google.maps.Marker({
+        map: map,
         position: tracking.currentLocation,
-        title: "Driver location"
+        title: "Driver",
+        label: {
+            text: "Driver",
+            color: "#000"
+        },
+        icon: {
+            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            scale: 5,
+            strokeColor: "#FF0000",
+            rotation: 0
+        }
     });
+
+
+    // =========================
+    // DIRECTIONS ROUTE
+    // =========================
+    directionsService = new google.maps.DirectionsService();
+
+    directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: true,
+        polylineOptions: {
+            strokeColor: "#0066ff",
+            strokeWeight: 5
+        }
+    });
+
+
+    drawRoute(tracking.currentLocation, tracking.destination);
 
     updateStatus(tracking.status);
 
@@ -89,7 +145,30 @@ async function initMap() {
 
 
 // =========================
-// WebSocket connection (STOMP)
+// Draw route
+// =========================
+function drawRoute(start, end) {
+
+    directionsService.route(
+        {
+            origin: start,
+            destination: end,
+            travelMode: google.maps.TravelMode.DRIVING
+        },
+        (result, status) => {
+
+            if (status === "OK") {
+                directionsRenderer.setDirections(result);
+            } else {
+                console.error("Directions failed:", status);
+            }
+        }
+    );
+}
+
+
+// =========================
+// WebSocket
 // =========================
 function connectWebSocket() {
 
@@ -100,8 +179,6 @@ function connectWebSocket() {
 
         onConnect: () => {
 
-            console.log("WebSocket connected");
-
             stompClient.subscribe(
                 `/gps/topic/user/${orderId}`,
                 (message) => {
@@ -110,7 +187,6 @@ function connectWebSocket() {
                 }
             );
 
-            // Send tracking request
             stompClient.publish({
                 destination: "/app/track-order",
                 body: JSON.stringify({ requestId: orderId })
@@ -118,7 +194,7 @@ function connectWebSocket() {
         },
 
         onStompError: (frame) => {
-            console.error("WebSocket error:", frame);
+            console.error(frame);
             updateStatus("Connection error");
         }
     });
@@ -138,15 +214,32 @@ function handleTrackingUpdate(update) {
 
     if (update.currentLocation && driverMarker) {
 
-        driverMarker.position = update.currentLocation;
+        const prev = driverMarker.getPosition();
 
-        map.panTo(update.currentLocation);
+        const newPos = update.currentLocation;
+
+        // rotate arrow
+        const heading = calculateHeading(
+            { lat: prev.lat(), lng: prev.lng() },
+            newPos
+        );
+
+        driverMarker.setIcon({
+            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            scale: 5,
+            strokeColor: "#FF0000",
+            rotation: heading
+        });
+
+        driverMarker.setPosition(newPos);
+
+        map.panTo(newPos);
     }
 }
 
 
 // =========================
-// Update UI status
+// Status UI
 // =========================
 function updateStatus(status) {
     document.getElementById("status").textContent = status;
@@ -154,7 +247,7 @@ function updateStatus(status) {
 
 
 // =========================
-// Submit handler (MAIN ENTRY)
+// Submit
 // =========================
 async function handleSubmit(event) {
 
@@ -163,24 +256,15 @@ async function handleSubmit(event) {
     orderId = getOrderId();
 
     if (!orderId) {
-        alert("Please enter order ID");
+        alert("Enter order ID");
         return;
     }
 
-    try {
-        trackingPage.classList.add('hidden');
-        mapPage.classList.remove('hidden');
+    trackingPage.classList.add("hidden");
+    mapPage.classList.remove("hidden");
 
-        await initMap();
-
-    } catch (error) {
-        console.error(error);
-        updateStatus("Failed to load tracking data");
-    }
+    await initMap();
 }
 
 
-// =========================
-// Event listener (ONLY ENTRY POINT)
-// =========================
-trackingForm.addEventListener('submit', handleSubmit);
+trackingForm.addEventListener("submit", handleSubmit);
