@@ -32,7 +32,7 @@ Spring Boot Backend
                                        Database Layer — PostgreSQL (Docker)
                                        Tables: Parcels, TrackingEvents, Users
 ```
-![Map](map2.png)
+
 ---
 
 ## 🛠️ Skills & Technical Highlights
@@ -59,7 +59,7 @@ This project was built to demonstrate hands-on backend engineering ability, not 
 ### Frontend / Integration
 - Built a **web dashboard** (HTML/CSS) integrating **Google Maps/Geocoding APIs** to resolve user postcodes and render live tracking visually.
 - Planning to migrate this dashboard to **JavaFX** for a richer native client experience.
-
+![Map](map2.png)
 ---
 
 
