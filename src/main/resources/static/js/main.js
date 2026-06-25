@@ -6,7 +6,6 @@ let map;
 let driverMarker;
 let pickupMarker;
 let destinationMarker;
-
 let directionsService;
 let directionsRenderer;
 
@@ -60,7 +59,6 @@ function calculateHeading(start, end) {
     return (brng * 180 / Math.PI + 360) % 360;
 }
 
-
 // =========================
 // INIT MAP
 // =========================
@@ -100,7 +98,6 @@ async function initMap() {
         label: "D"
     });
 
-
     // =========================
     // DRIVER MARKER (ARROW)
     // =========================
@@ -120,7 +117,6 @@ async function initMap() {
         }
     });
 
-
     // =========================
     // DIRECTIONS ROUTE
     // =========================
@@ -135,14 +131,10 @@ async function initMap() {
         }
     });
 
-
     drawRoute(tracking.currentLocation, tracking.destination);
-
     updateStatus(tracking.status);
-
     connectWebSocket();
 }
-
 
 // =========================
 // Draw route
@@ -165,7 +157,6 @@ function drawRoute(start, end) {
         }
     );
 }
-
 
 // =========================
 // WebSocket
@@ -202,7 +193,6 @@ function connectWebSocket() {
     stompClient.activate();
 }
 
-
 // =========================
 // Handle live updates
 // =========================
@@ -213,11 +203,8 @@ function handleTrackingUpdate(update) {
     }
 
     if (update.currentLocation && driverMarker) {
-
         const prev = driverMarker.getPosition();
-
         const newPos = update.currentLocation;
-
         // rotate arrow
         const heading = calculateHeading(
             { lat: prev.lat(), lng: prev.lng() },

@@ -9,9 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service responsible for batching and dispatching orders based on size and time triggers.
+ */
 @Service
-public class BatchDispatcher extends Containers{
-    private static final int BATCH_SIZE = 1;
+public class BatchDispatcher extends Containers {
+
+    private static final int BATCH_SIZE = 100;
+    private static int batchNo = 0;
 
     @Autowired
     private OrderList orderList;
@@ -19,21 +24,29 @@ public class BatchDispatcher extends Containers{
     @Autowired
     private DispatchQueue dispatchQueue;
 
-//    @Autowired
-//    private Containers containers;
-
     // SIZE-BASED + TIME-BASED trigger
-    @Scheduled(fixedDelay = 10 * 60 * 1000) //every 10mins
+
+    /**
+     * Scheduled task that triggers batch processing every 10 minutes.
+     */
+    @Scheduled(fixedDelay = 10 * 60 * 1000) // every 10 mins
     public void timeBasedBatch() {
         processBatch();
     }
 
+    /**
+     * Triggers batch processing when order list reaches defined size threshold.
+     */
     public void checkSizeTrigger() {
         if(orderList.getSize() >= BATCH_SIZE){
             processBatch();
+            System.out.println("\nbatch: "+batchNo+++"\n");
         }
     }
 
+    /**
+     * Processes a batch of orders and dispatches them.
+     */
     private synchronized void processBatch() {
         List<Request> batch = orderList.getBatch(BATCH_SIZE);
         if (batch.isEmpty()) return;
@@ -41,7 +54,7 @@ public class BatchDispatcher extends Containers{
         for (Request order : batch) {
             dispatchQueue.addOrder(order);
             order.setStatus(RequestStatus.DISPATCHED);
-
         }
     }
 }
+

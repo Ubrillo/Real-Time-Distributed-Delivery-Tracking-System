@@ -9,7 +9,11 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+/**
+ * Event model representing an order update used for event-driven communication.
+ */
 public class OrderEvent {
+
     @Getter
     private String customerName;
 
@@ -29,12 +33,15 @@ public class OrderEvent {
 
     @Getter
     private Zone deliveryZone;
+
     @Setter
     @Getter
     private Instant updatedAt;
+
     @Setter
     @Getter
     private Location location;
+
     @Setter
     @Getter
     private String history;
@@ -54,6 +61,11 @@ public class OrderEvent {
     @Getter
     String deliveryDriver;
 
+    /**
+     * Constructs an OrderEvent from a Request domain object.
+     *
+     * @param request source request containing order details
+     */
     public OrderEvent(Request request) {
         this.customerName = request.getCustomerName();
         this.requestId = request.getRequestId();
@@ -70,6 +82,8 @@ public class OrderEvent {
         this.deliveryDriver = request.getDeliveryDriver();
     }
 
+    /**
+     * Default constructor.
+     */
     public OrderEvent(){}
-
 }

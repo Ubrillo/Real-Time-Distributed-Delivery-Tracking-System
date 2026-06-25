@@ -2,35 +2,54 @@ package com.ubrillo.ubrillodeliverysystem.Logic;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Service
 public class DriverSimulator {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private double lat = 51.5074;  // London start
-    private double lng = -0.1278;
+    private final Map<String, DeliveryDriver> activeDrivers = new ConcurrentHashMap<>();
 
     public DriverSimulator(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @Scheduled(fixedRate = 2000) // every 2 seconds
-    public void simulateMovement() {
+    public void addDriver(DeliveryDriver driver) {
+        activeDrivers.put(driver.getId(), driver);
+    }
 
-        // simulate movement (random walk)
-        lat += (Math.random() - 0.5) * 0.001;
-        lng += (Math.random() - 0.5) * 0.001;
+    public void removeDriver(String driverId) {
+        activeDrivers.remove(driverId);
+    }
 
+    @Scheduled(fixedRate = 2000)
+    public void simulateAllDrivers() {
+        for (DeliveryDriver driver : activeDrivers.values()) {
+            moveDriverRandomly(driver);
+            sendDriverLocation(driver);
+        }
+    }
+
+    private void moveDriverRandomly(DeliveryDriver driver) {
+        Location current = driver.getCurrentLocation();
+
+        double newLat = current.getLatitude() + (Math.random() - 0.5) * 0.001;
+        double newLng = current.getLongitude() + (Math.random() - 0.5) * 0.001;
+
+        driver.moveTo(newLat, newLng);
+    }
+
+    private void sendDriverLocation(DeliveryDriver driver) {
         DriverLocationRequest update = new DriverLocationRequest();
-        update.setDriverId("SIM_DRIVER_1");
-        update.setLatitude(lat);
-        update.setLongitude(lng);
+        update.setDriverId(driver.getId());
+        update.setLatitude(driver.getCurrentLocation().getLatitude());
+        update.setLongitude(driver.getCurrentLocation().getLongitude());
 
-        System.out.println("Simulated driver update: " + update);
-
-        // push to all users
-        messagingTemplate.convertAndSend("/gps/topic/user/", update);
+        messagingTemplate.convertAndSend("/gps/location/" + driver.getId(), update);
+        messagingTemplate.convertAndSend("/gps/location", update);
     }
 }

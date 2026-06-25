@@ -13,8 +13,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 
+/**
+ * Core service responsible for managing order lifecycle operations,
+ * including creation, cancellation, tracking, delivery, and driver assignment.
+ */
 @Service
-public class OrderManager{
+public class OrderManager {
+
     @Autowired
     RequestService requestMan;
 
@@ -42,19 +47,28 @@ public class OrderManager{
     @Autowired
     private ObjectMapper mapper;
 
+    private static int processedOrders = 0;
 
-
+    /**
+     * Default constructor.
+     */
     public void OrderManager(){}
 
-
+    /**
+     * Creates a new order and persists it in database and system queues.
+     */
     public newRequestResponse createOrder(Request request){
         Request order = requestMan.createRequest(request);
         databaseAPI.insertOrder(order);
         orderList.addOrder(order);
         batchDispatcher.checkSizeTrigger();
+        System.out.println("\norder: "+ processedOrders++);
         return new newRequestResponse(order);
     }
 
+    /**
+     * Cancels an existing order.
+     */
     public Request cancelOrder(Request request){
         String id = request.getRequestId();
         Request order  = orderList.getOrder(id);
@@ -62,61 +76,78 @@ public class OrderManager{
         return order;
     }
 
+    /**
+     * Retrieves full order state, using cache first then database fallback.
+     */
     public OrderState getOrderDetails(Request request){
         OrderState orderState =  orderStateStore.getState(request.getRequestId());
-        //if order not found in cache, check database
+
         if (orderState == null){
             Request order = getOrderFromDb(request);
-
             return mapper.requestToOrderState(order);
         }
         return orderState;
     }
 
+    /**
+     * Retrieves order object, using cache first then database fallback.
+     */
     public Request getOrder(Request request){
         OrderState state =  orderStateStore.getState(request.getRequestId());
-        //if order not found in cache, check database
+
         if (state == null){
             return getOrderFromDb(request);
-
         }
+
         System.out.println(state.toString());
         return mapper.orderStateToRequest(state);
     }
 
-    public Request  getOrderFromDb(Request request){
+    /**
+     * Fetches order directly from database.
+     */
+    public Request getOrderFromDb(Request request){
         return databaseAPI.getOrder(request.getRequestId());
     }
 
-    public  GpsTrackingResponse trackOrderLocation(Request order){
+    /*------------------- TRACK DRIVER -------------------*/
+
+    /**
+     * Tracks real-time driver location for a given order.
+     */
+    public GpsTrackingResponse trackOrderLocation(Request order){
 
         OrderState state = orderStateStore.getState(order.getRequestId());
-        //return state;
-        DeliveryDriver driver =  driverManagement.getDriver(state.deliveryDriver());
+        DeliveryDriver driver = driverManagement.getDriver(state.deliveryDriver());
 
         GpsTrackingResponse response = new GpsTrackingResponse(
                 driver.currentLocation,
                 state.destination()
         );
+
         response.setRequestId(state.requestId());
         response.setStatus(state.status());
+
         return response;
     }
 
+    /**
+     * Assigns a delivery driver to an order.
+     */
     public void assignDeliveryDriver(String name, Request order) {
         DeliveryDriver driver = driverManagement.getDriver(name);
-//        if (order == null) {
-//            do {
-//                order = dispatchQueue2nd.getNextOrder(zone);
-//                driver.addToDeliveryList(order);
-//            } while (order != null);
-//        }
         driver.addToDeliveryList(order);
     }
 
-    /*===================DRIVER APIS =======================*/
+    /*=================== DRIVER APIS =======================*/
+
+    /**
+     * Handles scan event when an order is dispatched for delivery.
+     */
     public void deliveryOutScan(@RequestBody DeliveryScanRequest payload) {
+
         Request order = dispatchQueue.getNextOrder(payload.getDeliveryZone());
+
         if (order != null){
             order.setStatus(RequestStatus.OUTFORDELIVERY);
             order.addHistory("\n-> out for delivery");
@@ -130,19 +161,30 @@ public class OrderManager{
         }
     }
 
+    /**
+     * Publishes GPS updates for an order.
+     */
     public void updateOrderGps(signalGPS signal){
         orderEventProducer.publishGpsUpdate(signal);
     }
 
+    /**
+     * Handles delivery completion scan and final order update.
+     */
     public void deliveredOutScan(Request request){
-        OrderState state =  orderStateStore.getState(request.getRequestId());
+
+        OrderState state = orderStateStore.getState(request.getRequestId());
         Request order = databaseAPI.getOrder(state.requestId());
+
         order.setStatus(RequestStatus.DELIVERED);
         order.setHistory("Delivered");
         order.setDeliveryLocation(state.location());
         order.setUpdateAt(Instant.now());
+
         databaseAPI.updateOrder(order);
+
         order.addHistory("\n-> order delivered");
+
         Notification event = messageParser(order);
         orderEventProducer.publishOrderCreated(event);
         orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
@@ -154,19 +196,26 @@ public class OrderManager{
         }catch(Exception e){
             System.out.println(e);
         }
-
     }
 
+    /**
+     * Builds a notification message based on order status.
+     */
     Notification messageParser(Request order){
+
         RequestStatus eventType = order.getStatus();
+
         String sender = "ubrillo-delivery@org.uk";
         String recipient = order.getCustomerName();
         String description = order.getDescription();
+
         String time = requestMan.getCurrentTime();
+
         String orderId = order.getRequestId();
         RequestStatus orderStatus = order.getStatus();
 
         String message = "";
+
         switch (eventType){
             case CREATED -> message = "📦Your order has been received";
             case DISPATCHED -> message = "📦Your order has been dispatched";
@@ -174,6 +223,7 @@ public class OrderManager{
             case DELIVERED -> message = "📦Your order has been delivered";
             case OUTFORDELIVERY -> message = "📦Your order is out for delivery!!!";
         }
+
         return new Notification(
                 sender,
                 recipient,

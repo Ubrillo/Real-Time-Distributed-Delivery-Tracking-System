@@ -1,4 +1,5 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
+
 import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEvent;
 import com.ubrillo.ubrillodeliverysystem.Events.OrderEventProducer;
@@ -8,6 +9,10 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service responsible for processing GPS updates from drivers and
+ * broadcasting real-time tracking information.
+ */
 @Service
 public class GpsService {
 
@@ -23,8 +28,14 @@ public class GpsService {
     @Autowired
     OrderEventProducer orderEventProducer;
 
+    /**
+     * Default constructor.
+     */
     public GpsService(){}
 
+    /**
+     * Processes incoming GPS signals and updates driver locations.
+     */
     public void updateLocation(signalGPS signal){
 
         Coordinate currentCoordinate;
@@ -42,40 +53,18 @@ public class GpsService {
 
             for (Request order:  driver.getOrdersList()){
 
-//                order.setCurrentLocation(
-//                        new Location(currentCoordinate.latitude(), currentCoordinate.longitude())
-//                );
-
-
-                //orderEventProducer.publishOrderStateTracker(new OrderEvent(order));
-
-//                trackingWebSocketService.sendTrackingUpdate(new OrderState(
-//                        order.getRequestId(),
-//                        order.getStatus(),
-//                        order.getUpdateAt(),
-//                        order.getCurrentLocation(),
-//                        order.getDeliveryLocation(),
-//                        order.getCustomerName(),
-//                        order.getDescription(),
-//                        order.getUserEmail(),
-//                        order.getDeliveryAddress(),
-//                        order.getPostCode(),
-//                        order.getDeliveryDriver(),
-//                        order.getHistory()
-//                ));
                 double lat, lon;
                 lat = currentCoordinate.latitude();
                 lon = currentCoordinate.longitude();
+
                 GpsTrackingResponse response = GpsTrackingResponse.builder().
                         currentLocation(new Location(lat, lon)).
                         destination(order.getDeliveryLocation()).
                         status(order.getStatus()).
                         build();
+
                 trackingWebSocketService.sendTrackingUpdate(response);
             }
         }
     }
-
-
-
 }

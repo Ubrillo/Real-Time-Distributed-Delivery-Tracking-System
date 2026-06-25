@@ -5,9 +5,14 @@ import lombok.Setter;
 
 import java.time.Instant;
 
-public class newRequestResponse{
+/**
+ * Response model representing a newly created request summary.
+ */
+public class newRequestResponse {
+
     @Getter
     private String customerName;
+
     @Getter
     @Setter
     private String requestId;
@@ -15,6 +20,7 @@ public class newRequestResponse{
     @Getter
     @Setter
     private Instant updateAt;
+
     @Getter
     @Setter
     private RequestStatus status;
@@ -35,6 +41,11 @@ public class newRequestResponse{
     @Getter
     private String description;
 
+    /**
+     * Constructs a response object from a Request domain object.
+     *
+     * @param request source request entity
+     */
     public newRequestResponse(Request request) {
         this.customerName = request.getCustomerName();
         this.requestId = request.getRequestId();
@@ -45,5 +56,4 @@ public class newRequestResponse{
         this.userEmail = request.getUserEmail();
         this.description = request.getDescription();
     }
-
 }

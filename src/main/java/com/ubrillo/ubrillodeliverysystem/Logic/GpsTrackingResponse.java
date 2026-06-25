@@ -5,8 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
+/**
+ * Response model used for GPS tracking updates, extending Request data structure.
+ */
 @Builder
 public class GpsTrackingResponse extends Request {
+
     @Getter
     @Setter
     private Location currentLocation;
@@ -19,12 +23,22 @@ public class GpsTrackingResponse extends Request {
     @Setter
     private RequestStatus status;
 
+    /**
+     * Default constructor.
+     */
     public GpsTrackingResponse(){}
 
+    /**
+     * Constructs a GPS tracking response with current and destination locations.
+     */
     public GpsTrackingResponse(Location currentLocation, Location destination) {
         this.destination = destination;
         this.currentLocation = currentLocation;
     }
+
+    /**
+     * Constructs a GPS tracking response with location and status.
+     */
     public GpsTrackingResponse(
             Location currentLocation,
             Location destination,
@@ -35,6 +49,9 @@ public class GpsTrackingResponse extends Request {
         this.status = status;
     }
 
+    /**
+     * Returns string representation of GPS tracking response.
+     */
     @Override
     public String toString() {
         return "GpsTrackingResponse{" +
@@ -43,4 +60,3 @@ public class GpsTrackingResponse extends Request {
                 '}';
     }
 }
-

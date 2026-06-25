@@ -10,8 +10,13 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
+/**
+ * Kafka consumer responsible for handling order events, GPS updates,
+ * and tracking-related updates across the system.
+ */
 @Component
 public class OrderEventConsumer {
+
     @Autowired
     private GpsService gpsService;
 
@@ -19,32 +24,40 @@ public class OrderEventConsumer {
     private CacheLogic stateStore;
 
     @Autowired
-    private  EmailNotificationService emailService;
+    private EmailNotificationService emailService;
 
     @Autowired
     TrackingWebSocketService trackingWebSocketService;
 
-
+    /**
+     * Consumes general order notifications from Kafka.
+     */
     @KafkaListener(
             topics = "order-events",
             groupId = "tracking-service-group"
     )
-    private void consumeOrderCreated(Notification event){
+    private void consumeOrderEvent(Notification event){
+
         String message =
                 "\n=================[Notification]================"+
-                "\nsender: "+event.sender()+
-                "\nrecipient: "+event.recipient()+
-                "\ndescription: "+event.description()+
-                "\ntime: "+event.time()+
-                "\norder No: "+event.orderId()+
-                "\nmessage: "+event.message()+
-                "\n"+"=====================[END]====================";
-        System.out.println(message);
-        //emailService.sendOrdUpdateEmail(event);
+                        "\nsender: "+event.sender()+
+                        "\nrecipient: "+event.recipient()+
+                        "\ndescription: "+event.description()+
+                        "\ntime: "+event.time()+
+                        "\norder No: "+event.orderId()+
+                        "\nmessage: "+event.message()+
+                        "\n"+"=====================[END]====================";
+
+        // System.out.println(message);
+        // emailService.sendOrdUpdateEmail(event);
     }
 
+    /**
+     * Consumes order state updates from Kafka and updates the cache store.
+     */
     @KafkaListener(topics ="tracking-events")
     private void consumeOrderState(OrderEvent event){
+
         String history = addHistory(event);
 
         OrderState state = new OrderState(
@@ -61,16 +74,26 @@ public class OrderEventConsumer {
                 event.getDeliveryDriver(),
                 event.getHistory()
         );
+
         stateStore.updateState(state);
     }
 
+    /**
+     * Consumes GPS tracking signals and updates driver location.
+     */
     @KafkaListener(topics="gps-tracker")
     private void consumeGpsSignal(signalGPS signal){
         gpsService.updateLocation(signal);
     }
 
+    /**
+     * Consumes real-time tracking updates and forwards them to WebSocket clients.
+     */
     @KafkaListener(topics="order-tracking-udate", groupId="websocket-tracking-service")
     public void consumeTrackingUpdate(OrderState update){
+
+        // can store the current location of the driver
+
 //        trackingWebSocketService.sendTrackingUpdate(
 //                new OrderState(
 //                        update.requestId(),
@@ -87,19 +110,24 @@ public class OrderEventConsumer {
 //                        update.history()
 //                )
 //        );
-////        double lat, lon;
+
+//        double lat, lon;
 //        lat = currentCoordinate.latitude();
 //        lon = currentCoordinate.longitude();
+//
 //        GpsTrackingResponse response = GpsTrackingResponse.builder().
 //                .
 //                destination(order.getDeliveryLocation()).
 //                status(order.getStatus()).
 //                build();
-//        trackingWebSocketService.sendTrackingUpdate(
-//        );
+//
+//        trackingWebSocketService.sendTrackingUpdate();
     }
 
-    private String  addHistory(OrderEvent event){
+    /**
+     * Builds a formatted history log entry for an order event.
+     */
+    private String addHistory(OrderEvent event){
         return "\n--------------[Latest Update]-------"+
                 "\nstatus: "+event.getStatus()+
                 "\ncurrent location: "+event.getLocation()+

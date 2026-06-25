@@ -1,12 +1,19 @@
 package com.ubrillo.ubrillodeliverysystem.Logic;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-
+/**
+ * Represents a delivery driver entity responsible for managing
+ * location updates and assigned delivery orders.
+ */
 public class DeliveryDriver {
+
     @Getter
     @Setter
     String name;
@@ -29,12 +36,11 @@ public class DeliveryDriver {
 
     @Getter
     @Setter
-    ArrayList<Location>destinations;
+    ArrayList<Location> destinations;
 
     @Getter
     @Setter
     Coordinate coordinate;
-
 
     @Getter
     @Setter
@@ -44,29 +50,41 @@ public class DeliveryDriver {
     @Setter
     Zone deliveryZone;
 
+    /**
+     * Default constructor.
+     */
     public DeliveryDriver(){}
 
-    public DeliveryDriver(
-            String name,
-            String id,
-            Location currentLocation,
-            Coordinate coordinate
-    ){
+    /**
+     * Constructs a delivery driver with basic identity information.
+     *
+     * @param name driver name
+     * @param id driver identifier
+     */
+    public DeliveryDriver(String name, String id){
         this.name = name;
         this.id = id;
-        this.currentLocation = currentLocation;
-        this.coordinate = coordinate;
+        currentLocation = new Location(GpsService.getBaseCoordinate());
         ordersList = new ArrayList<>();
     }
 
+    /**
+     * Updates current location using a Location object.
+     */
     public void setCurrentLocation(Location currentLocation) {
         this.currentLocation = currentLocation;
     }
 
+    /**
+     * Updates current location using raw coordinate values.
+     */
     public void setCurrentLocation(Coordinate xy){
         currentLocation = new Location(xy.latitude(), xy.longitude());
     }
 
+    /**
+     * Returns a string representation of the delivery driver state.
+     */
     @Override
     public String toString() {
         return "DeliveryDriver{" +
@@ -79,9 +97,20 @@ public class DeliveryDriver {
                 ", deliveryZone=" + deliveryZone +
                 '}';
     }
+
+    /**
+     * Adds an order to the driver's delivery list.
+     */
     public void addToDeliveryList(Request order) {
         ordersList.add(order);
     }
-}
 
+    /**
+     * Moves the driver to a new geographic location.
+     */
+    public void moveTo(double lat, double lng) {
+        this.previousLocation = this.currentLocation;
+        this.currentLocation = new Location(lat, lng);
+    }
+}
 

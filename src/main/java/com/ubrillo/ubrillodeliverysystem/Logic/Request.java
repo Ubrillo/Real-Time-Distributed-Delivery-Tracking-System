@@ -7,8 +7,12 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.HashMap;
 
+/**
+ * JPA entity representing a delivery request/order in the system.
+ */
 @Entity
 public class Request {
+
     @Setter
     @Getter
     private String customerName;
@@ -40,7 +44,7 @@ public class Request {
     @Setter
     @Getter
     @Enumerated(EnumType.STRING)
-    private Zone  deliveryZone;
+    private Zone deliveryZone;
 
     @Setter
     @Getter
@@ -74,17 +78,22 @@ public class Request {
     @Getter
     private String deliveryDriver;
 
+    /**
+     * Default constructor required by JPA.
+     */
     public Request() {
         // REQUIRED
     }
 
+    /**
+     * Constructs a new delivery request with basic customer information.
+     */
     public Request(String customerName,
                    String requestId,
                    String description,
                    String emailAddress,
                    String postCode,
                    String deliveryAddress
-
     ) {
 
         this.customerName = customerName;
@@ -93,19 +102,22 @@ public class Request {
         this.userEmail = emailAddress;
         this.postCode = postCode;
         this.deliveryAddress = deliveryAddress;
-
     }
 
+    /**
+     * Appends a message to the request history log.
+     */
     public void addHistory(String msg){
         history += msg;
     }
 
-
+    /**
+     * Returns string representation of the request.
+     */
     @Override
     public String toString() {
         return "Request{" +
                 "customerName='" + customerName + '\'' +
-
                 ", requestId='" + requestId + '\'' +
                 ", description='" + description + '\'' +
                 ", status=" + status +
