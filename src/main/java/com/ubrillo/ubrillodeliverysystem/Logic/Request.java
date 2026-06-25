@@ -4,33 +4,47 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.HashMap;
 
+/**
+ * JPA entity representing a delivery request/order in the system.
+ */
 @Entity
 public class Request {
+
     @Setter
     @Getter
     private String customerName;
+
     @Setter
     @Getter
-    private String time;
+    private Instant updateAt;
+
     @Setter
     @Getter
     private String description;
+
     @Getter
     @Setter
-    private String info = "";
+    private String history = "";
+
     @Setter
     @Getter
-    private String emailAddress;
+    private String userEmail;
+
+    @Setter
+    @Getter
     private String deliveryAddress;
+
     @Getter
+    @Setter
     private String postCode;
 
     @Setter
     @Getter
     @Enumerated(EnumType.STRING)
-    private Zone  deliveryZone;
+    private Zone deliveryZone;
 
     @Setter
     @Getter
@@ -60,46 +74,56 @@ public class Request {
     })
     private Location deliveryLocation;
 
+    @Setter
+    @Getter
+    private String deliveryDriver;
+
+    /**
+     * Default constructor required by JPA.
+     */
     public Request() {
         // REQUIRED
     }
 
+    /**
+     * Constructs a new delivery request with basic customer information.
+     */
     public Request(String customerName,
                    String requestId,
                    String description,
-                   Location currentLocation,
-                   Location deliveryLocation,
-                   String time,
                    String emailAddress,
-                   String postCode) {
+                   String postCode,
+                   String deliveryAddress
+    ) {
 
         this.customerName = customerName;
         this.requestId = requestId;
         this.description = description;
-        this.currentLocation = currentLocation;
-        this.deliveryLocation = deliveryLocation;
-        this.time = time;
-        this.status = RequestStatus.CREATED;
-        this.emailAddress = emailAddress;
+        this.userEmail = emailAddress;
         this.postCode = postCode;
+        this.deliveryAddress = deliveryAddress;
     }
 
-    public void addInfo(String msg){
-        info += msg;
+    /**
+     * Appends a message to the request history log.
+     */
+    public void addHistory(String msg){
+        history += msg;
     }
 
-
+    /**
+     * Returns string representation of the request.
+     */
     @Override
     public String toString() {
         return "Request{" +
                 "customerName='" + customerName + '\'' +
-
                 ", requestId='" + requestId + '\'' +
                 ", description='" + description + '\'' +
                 ", status=" + status +
                 ", currentLocation=" + currentLocation +
                 ", deliveryLocation=" + deliveryLocation +
-                ", time='" + time + '\'' +
+                ", time='" + updateAt + '\'' +
                 '}';
     }
 }

@@ -8,15 +8,28 @@ import org.springframework.web.client.RestClient;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Service responsible for optimizing delivery routes using OR-Tools
+ * and OSRM distance matrix API.
+ */
 @Service
 public class DeliveryRouteService {
 
     private final RestClient restClient = RestClient.create();
 
+    /**
+     * Initializes native OR-Tools libraries.
+     */
     public DeliveryRouteService(){
         Loader.loadNativeLibraries();
     }
 
+    /**
+     * Optimizes the delivery route using a distance/duration matrix.
+     *
+     * @param stops list of delivery stops
+     * @return optimized route result with ordered stops and total duration
+     */
     public RouteResult optimizeRoute(List<DeliveryStop> stops){
 
         long[][] durationMatrix = fetchOsrmDurationMatrix(stops);
@@ -39,6 +52,7 @@ public class DeliveryRouteService {
         });
 
         routing.setArcCostEvaluatorOfAllVehicles(transitCallbackIndex);
+
         RoutingSearchParameters searchParameters =
                 main.defaultRoutingSearchParameters()
                         .toBuilder()
@@ -54,7 +68,6 @@ public class DeliveryRouteService {
         }
 
         List<DeliveryStop> orderedStops = new ArrayList<>();
-
         long totalSeconds = 0;
 
         long index = routing.start(0);
@@ -74,7 +87,14 @@ public class DeliveryRouteService {
         return new RouteResult(orderedStops, totalSeconds);
     }
 
+    /**
+     * Fetches a travel duration matrix from OSRM API for all delivery stops.
+     *
+     * @param stops list of delivery stops
+     * @return matrix of travel durations between stops
+     */
     private long[][] fetchOsrmDurationMatrix(List<DeliveryStop> stops) {
+
         String coordinates = stops.stream()
                 .map(stop -> stop.lng() + "," + stop.lat())
                 .reduce((a, b) -> a + ";" + b)
@@ -86,6 +106,7 @@ public class DeliveryRouteService {
 
         OsrmTableResponse response = restClient.get()
                 .uri(url)
+                .header("Accept-Encoding", "identity")
                 .retrieve()
                 .body(OsrmTableResponse.class);
 
@@ -101,6 +122,7 @@ public class DeliveryRouteService {
                 matrix[i][j] = Math.round(durations.get(i).get(j));
             }
         }
+
         return matrix;
     }
 }

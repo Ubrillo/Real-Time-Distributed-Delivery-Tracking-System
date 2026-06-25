@@ -1,0 +1,94 @@
+package com.ubrillo.ubrillodeliverysystem.Logic;
+
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Service
+public class GeocodingService {
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    // Simple in-memory cache (replace with Redis later)
+    private final Map<String, Coordinate> cache = new ConcurrentHashMap<>();
+
+    // basic rate control (very simple protection)
+    private long lastRequestTime = 0;
+
+    public Coordinate getCoordinates(String postcode) {
+
+        // 1. CACHE CHECK
+        if (cache.containsKey(postcode)) {
+            return cache.get(postcode);
+        }
+
+        // 2. BASIC RATE LIMIT (1 request/sec)
+        enforceRateLimit();
+
+        String url = UriComponentsBuilder
+                .fromUriString("https://nominatim.openstreetmap.org/search")
+                .queryParam("q", postcode)
+                .queryParam("format", "json")
+                .queryParam("limit", 1)
+                .build()
+                .toUriString();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(
+                HttpHeaders.USER_AGENT,
+                "ubrillo-delivery-system/1.0 (grandsonudoette005@gmail.com)"
+        );
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<NominatimResponse[]> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    NominatimResponse[].class
+            );
+
+            NominatimResponse[] body = response.getBody();
+
+            if (body == null || body.length == 0) {
+                throw new IllegalArgumentException("No coordinates found for postcode: " + postcode);
+            }
+
+            Coordinate coord = new Coordinate(
+                    Double.parseDouble(body[0].getLatitude()),
+                    Double.parseDouble(body[0].getLongitude())
+            );
+
+            // 3. STORE IN CACHE
+            cache.put(postcode, coord);
+
+            return coord;
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Geocoding failed for postcode: " + postcode, e
+            );
+        }
+    }
+
+    private synchronized void enforceRateLimit() {
+        long now = System.currentTimeMillis();
+
+        long diff = now - lastRequestTime;
+
+        if (diff < 1000) {
+            try {
+                Thread.sleep(1000 - diff);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        lastRequestTime = System.currentTimeMillis();
+    }
+}

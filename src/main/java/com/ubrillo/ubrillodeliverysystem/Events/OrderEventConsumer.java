@@ -1,60 +1,139 @@
 package com.ubrillo.ubrillodeliverysystem.Events;
 
-import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderState;
-import com.ubrillo.ubrillodeliverysystem.StateManagement.OrderStateStore;
+import com.ubrillo.ubrillodeliverysystem.Cache.OrderState;
+import com.ubrillo.ubrillodeliverysystem.Logic.*;
+import com.ubrillo.ubrillodeliverysystem.Cache.CacheLogic;
+import com.ubrillo.ubrillodeliverysystem.WebSocket.TrackingWebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 
+/**
+ * Kafka consumer responsible for handling order events, GPS updates,
+ * and tracking-related updates across the system.
+ */
 @Component
 public class OrderEventConsumer {
-    @Autowired
-    private  OrderStateStore stateStore;
 
     @Autowired
-    private  EmailNotificationService emailService;
+    private GpsService gpsService;
 
+    @Autowired
+    private CacheLogic stateStore;
+
+    @Autowired
+    private EmailNotificationService emailService;
+
+    @Autowired
+    TrackingWebSocketService trackingWebSocketService;
+
+    /**
+     * Consumes general order notifications from Kafka.
+     */
     @KafkaListener(
             topics = "order-events",
             groupId = "tracking-service-group"
     )
-    public void consumeOrderCreated(Notification event){
+    private void consumeOrderEvent(Notification event){
+
         String message =
                 "\n=================[Notification]================"+
-                "\nsender: "+event.sender()+
-                "\nrecipient: "+event.recipient()+
-                "\ndescription: "+event.description()+
-                "\ntime: "+event.time()+
-                "\norder No: "+event.orderId()+
-                "\nmessage: "+event.message()+
-                "\n"+"=====================[END]====================";
-        System.out.println(message);
-        //emailService.sendOrdUpdateEmail(event);
+                        "\nsender: "+event.sender()+
+                        "\nrecipient: "+event.recipient()+
+                        "\ndescription: "+event.description()+
+                        "\ntime: "+event.time()+
+                        "\norder No: "+event.orderId()+
+                        "\nmessage: "+event.message()+
+                        "\n"+"=====================[END]====================";
+
+        // System.out.println(message);
+        // emailService.sendOrdUpdateEmail(event);
     }
 
+    /**
+     * Consumes order state updates from Kafka and updates the cache store.
+     */
     @KafkaListener(topics ="tracking-events")
-    public void consumeOrderState(OrderEvent event){
+    private void consumeOrderState(OrderEvent event){
+
         String history = addHistory(event);
 
         OrderState state = new OrderState(
                 event.getRequestId(),
                 event.getStatus(),
-                event.getTime(),
+                event.getUpdatedAt(),
                 event.getLocation(),
-                history
+                event.getDestination(),
+                event.getCustomerName(),
+                event.getDescription(),
+                event.getUserEmail(),
+                event.getDeliveryAddress(),
+                event.getPostCode(),
+                event.getDeliveryDriver(),
+                event.getHistory()
         );
 
         stateStore.updateState(state);
     }
 
-    private String  addHistory(OrderEvent event){
+    /**
+     * Consumes GPS tracking signals and updates driver location.
+     */
+    @KafkaListener(topics="gps-tracker")
+    private void consumeGpsSignal(signalGPS signal){
+        gpsService.updateLocation(signal);
+    }
+
+    /**
+     * Consumes real-time tracking updates and forwards them to WebSocket clients.
+     */
+    @KafkaListener(topics="order-tracking-udate", groupId="websocket-tracking-service")
+    public void consumeTrackingUpdate(OrderState update){
+
+        // can store the current location of the driver
+
+//        trackingWebSocketService.sendTrackingUpdate(
+//                new OrderState(
+//                        update.requestId(),
+//                        update.status(),
+//                        update.updatedAt(),
+//                        update.location(),
+//                        update.destination(),
+//                        update.customerName(),
+//                        update.description(),
+//                        update.userEmail(),
+//                        update.deliveryAddress(),
+//                        update.postCode(),
+//                        update.deliveryDriver(),
+//                        update.history()
+//                )
+//        );
+
+//        double lat, lon;
+//        lat = currentCoordinate.latitude();
+//        lon = currentCoordinate.longitude();
+//
+//        GpsTrackingResponse response = GpsTrackingResponse.builder().
+//                .
+//                destination(order.getDeliveryLocation()).
+//                status(order.getStatus()).
+//                build();
+//
+//        trackingWebSocketService.sendTrackingUpdate();
+    }
+
+    /**
+     * Builds a formatted history log entry for an order event.
+     */
+    private String addHistory(OrderEvent event){
         return "\n--------------[Latest Update]-------"+
                 "\nstatus: "+event.getStatus()+
                 "\ncurrent location: "+event.getLocation()+
                 "\ntime: "+event.getUpdatedAt()+
                 "\nID: "+event.getRequestId()+
-                "\nInfo: "+event.getInfo()+
+                "\nInfo: "+event.getHistory()+
                 "\n"+"------------[END]---------------";
     }
 }

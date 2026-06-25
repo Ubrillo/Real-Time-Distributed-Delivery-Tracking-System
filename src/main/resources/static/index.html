@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Parcel Tracking</title>
+
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <noscript>
+      <h2>Sorry! Your browser doesn't support Javascript</h2>
+    </noscript>
+
+    <header class="tracking-header">
+      <h2>Live Parcel Tracking</h2>
+      <p>Status: <span id="status">Loading...</span></p>
+    </header>
+
+    <div id="tracking-page">
+      <div class="tracking-page-container">
+        <h1 class="title">Type your Order Number</h1>
+        <form id="trackingForm" name="trackingForm">
+          <div class="form-group">
+            <input type="text" id="orderId" placeholder="OrderId" autocomplete="off" class="form-control" />
+          </div>
+          <div class="form-group">
+            <button type="submit" class="accent tracking-submit">Start Tracking</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <main>
+      <div id="map"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+
+
+    <script src="js/main.js"></script>
+
+    <script
+            async
+            defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpXxPIAP85NjNNUykP5iCLJaSDDGebVSo&callback=initMap&v=weekly&libraries=marker">
+    </script>
+  </body>
+</html>
